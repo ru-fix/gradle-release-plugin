@@ -21,10 +21,14 @@ open class CreateReleaseBranchTask : DefaultTask() {
             throw GradleException("Release branch can be built only from ${extension.mainBranch} branch")
         }
 
-        print("Please specify release version (Should be in x.y format)")
+        println("Please specify release version (Should be in x.y format). The last version is ${ReleaseUtils.lastVersion(git)}")
+
+        //TODO: check that it's bigger
 
         while (true) {
+
             val input = readLine()
+
             if (input == null || !isValidVersion(input)) {
                 println("Please specify valid version")
                 continue
@@ -38,15 +42,13 @@ open class CreateReleaseBranchTask : DefaultTask() {
             }
 
             ReleaseUtils.createBranch(git, branch)
+            git.checkout().setName(branch).call()
 
-            println("Branch $branch successfully created")
+            println("Branch $branch was successfully created")
             break
 
         }
     }
-
-
-
 
 
 }

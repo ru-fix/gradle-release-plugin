@@ -27,13 +27,3 @@ publishing {
     }
 }
 
-//configure<ReleaseExtension> {
-//
-//
-//    this.plugins {
-//        "releass" {
-//            id = "info.adavis.qualitychecks"
-//            displayName = "Quality Checks Android Plugin"
-//        }
-//    }
-//}

@@ -3,7 +3,6 @@ package ru.fix.platform.plugin.release
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder
-import org.gradle.api.GradleException
 
 class ReleaseUtils {
     companion object {
@@ -24,9 +23,11 @@ class ReleaseUtils {
 
         fun createBranch(git: Git, branch: String): Ref = git.branchCreate().setName(branch).call()
 
-
-
         fun isValidVersion(version: String): Boolean = Regex("(\\d+)\\.(\\d+)").matches(version)
+
+        fun lastVersion(git: Git): String {
+            return "1.0" //TODO:
+        }
 
 
 

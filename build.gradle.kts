@@ -2,7 +2,7 @@ import org.gradle.api.tasks.bundling.Jar
 
 
 plugins {
-    kotlin("jvm") version "1.1.51"
+    kotlin("jvm") version "1.1.60"
     `maven-publish`
 
 }
@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    compile(kotlin("stdlib", "1.1.51"))
+    compile(kotlin("stdlib", "1.1.60"))
     compile(gradleApi())
     compile("org.eclipse.jgit:org.eclipse.jgit:4.9.0.201710071750-r")
     compile("com.github.zafarkhaja:java-semver:0.9.0")
@@ -26,3 +26,14 @@ publishing {
         }
     }
 }
+
+//configure<ReleaseExtension> {
+//
+//
+//    this.plugins {
+//        "releass" {
+//            id = "info.adavis.qualitychecks"
+//            displayName = "Quality Checks Android Plugin"
+//        }
+//    }
+//}

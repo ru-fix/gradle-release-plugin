@@ -26,5 +26,12 @@ publishing {
         }
     }
 
+    repositories{
+        maven{
+            name = "artifactory"
+            url = "https://"
+        }
+    }
 }
+
 

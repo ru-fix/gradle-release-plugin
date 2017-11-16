@@ -7,3 +7,10 @@
 Параметры:
     mainBranch: String, - название основной ветки, по-умолчанию - "develop"
     releaseBranchPrefix: String - префикс для релизной ветки, по-умолчанию - "releases/release-"
+    
+    
+### Сборка    
+Собрать и опубликовать в лоакльном m2 repository
+```
+gradle publishToMavenLocal
+```

@@ -25,5 +25,6 @@ publishing {
             from(components["java"])
         }
     }
+
 }
 

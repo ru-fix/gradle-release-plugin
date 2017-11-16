@@ -7,7 +7,11 @@
 Параметры:
     mainBranch: String, - название основной ветки, по-умолчанию - "develop"
     releaseBranchPrefix: String - префикс для релизной ветки, по-умолчанию - "releases/release-"
-    
+
+
+Подключается как обычный плагин по координатам ru.fix.platform.plugins:release:1.0-SNAPSHOT
+
+
     
 ### Сборка    
 Собрать и опубликовать в лоакльном m2 repository

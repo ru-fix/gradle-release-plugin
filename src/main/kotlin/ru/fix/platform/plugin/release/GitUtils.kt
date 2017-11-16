@@ -1,10 +1,13 @@
 package ru.fix.platform.plugin.release
 
 import org.eclipse.jgit.lib.Ref
+import org.gradle.api.logging.Logging
+import ru.fix.platform.plugin.release.GitHolder.git
 
 class GitUtils {
     companion object {
 
+        private val logger = Logging.getLogger("GitUtils")!!
 
         fun getCurrentBranch(): String = GitHolder.git.repository.branch
 
@@ -17,7 +20,9 @@ class GitUtils {
         }
 
         fun createBranch(branch: String, checkout: Boolean = false): Ref {
-            println("Creating branch $branch ${if (checkout) "and checkout" else ""}")
+
+
+            logger.lifecycle("Creating branch $branch ${if (checkout) "and checkout" else ""}")
             val ref = GitHolder.git.branchCreate().setName(branch).call()
             return if (checkout) {
                 GitHolder.git
@@ -30,13 +35,13 @@ class GitUtils {
         }
 
         fun checkout(branch: String): Ref {
-            println("Checkout to branch $branch")
+            logger.lifecycle("Checkout to branch $branch")
             return GitHolder.git.checkout().setName(branch).call()
         }
 
         fun createTag(name: String, comment: String): Ref {
 
-            println("Creating tag $name with comment $comment")
+            logger.lifecycle("Creating tag $name with comment $comment")
 
 
             return GitHolder.git
@@ -49,12 +54,24 @@ class GitUtils {
 
 
         fun deleteBranch(name: String) {
-            println("Deleting branch $name")
+            logger.lifecycle("Deleting branch $name")
             GitHolder.git
                     .branchDelete()
                     .setBranchNames(name)
                     .setForce(true)
                     .call()
+        }
+
+
+        fun commitFilesInIndex(commitMessage: String) {
+            println("Commiting files")
+
+            GitHolder.git.add().addFilepattern(".")
+                    .call()
+            git.commit()
+                    .setMessage(commitMessage)
+                    .call()
+
         }
 
 

@@ -17,40 +17,40 @@ open class CreateReleaseBranchTask : DefaultTask() {
             throw GradleException("Release branch can be built only from ${extension.mainBranch} branch")
         }
 
-        val supposedVersion = VersionUtils.supposeMajorVersion()
-        println("Please specify release version (Should be in x.y format) [$supposedVersion]")
+        val supposedVersion = VersionUtils.supposeBranchVersion()
+        project.logger.lifecycle("Please specify release version (Should be in x.y format) [$supposedVersion]")
 
 
         while (true) {
 
             var input = readLine()
 
-            if (input == null) {
+            if (input == null || input.isBlank()) {
                 //Подставляем текущую версию
                 input = supposedVersion;
             }
 
 
-            if (VersionUtils.majorVersionExists(input)) {
-                println("Version $input already exists")
+            if (VersionUtils.branchVersionExists(input)) {
+                project.logger.lifecycle("Version $input already exists")
                 continue
             }
 
-            if (!VersionUtils.isValidVersion(input)) {
-                println("Please specify valid version")
+            if (!VersionUtils.isValidBranchVersion(input)) {
+                project.logger.lifecycle("Please specify valid version")
                 continue
             }
 
             val branch = "${extension.releaseBranchPrefix}$input"
 
             if (GitUtils.isBranchExists(branch)) {
-                println("Branch with name $branch already exists")
+                project.logger.lifecycle("Branch with name $branch already exists")
                 continue
             }
 
             GitUtils.createBranch(branch, true)
 
-            println("Branch $branch was successfully created")
+            project.logger.lifecycle("Branch $branch was successfully created")
             break
 
         }

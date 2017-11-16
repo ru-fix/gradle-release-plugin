@@ -3,7 +3,6 @@ package ru.fix.platform.plugin.release
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.TaskAction
-import ru.fix.platform.plugin.release.ReleaseUtils.Companion.isValidVersion
 
 open class CreateReleaseBranchTask : DefaultTask() {
 
@@ -14,35 +13,42 @@ open class CreateReleaseBranchTask : DefaultTask() {
         extension = checkNotNull(extension)
 
 
-        val git = ReleaseUtils.createGit();
-        val currentBranch = git.repository.branch
-
-        if (currentBranch != extension.mainBranch) {
+        if (GitUtils.getCurrentBranch() != extension.mainBranch) {
             throw GradleException("Release branch can be built only from ${extension.mainBranch} branch")
         }
 
-        println("Please specify release version (Should be in x.y format). The last version is ${ReleaseUtils.lastVersion(git)}")
+        val supposedVersion = VersionUtils.supposeMajorVersion()
+        println("Please specify release version (Should be in x.y format) [$supposedVersion]")
 
-        //TODO: check that it's bigger
 
         while (true) {
 
-            val input = readLine()
+            var input = readLine()
 
-            if (input == null || !isValidVersion(input)) {
+            if (input == null) {
+                //Подставляем текущую версию
+                input = supposedVersion;
+            }
+
+
+            if (VersionUtils.majorVersionExists(input)) {
+                println("Version $input already exists")
+                continue
+            }
+
+            if (!VersionUtils.isValidVersion(input)) {
                 println("Please specify valid version")
                 continue
             }
 
             val branch = "${extension.releaseBranchPrefix}$input"
 
-            if (ReleaseUtils.isBranchExists(git, branch)) {
-                println("Branch $branch already exists")
-                continue;
+            if (GitUtils.isBranchExists(branch)) {
+                println("Branch with name $branch already exists")
+                continue
             }
 
-            ReleaseUtils.createBranch(git, branch)
-            git.checkout().setName(branch).call()
+            GitUtils.createBranch(branch, true)
 
             println("Branch $branch was successfully created")
             break

@@ -18,3 +18,12 @@
 ```
 gradle publishToMavenLocal
 ```
+
+### Deploy
+Provide credentials for repository:  
+```
+~/.gradle/gradle.properties
+
+repositoryUser = user
+repositoryPassword = password
+```

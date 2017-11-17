@@ -27,7 +27,18 @@ Provide credentials for repository:
 repositoryUser = user
 repositoryPassword = password
 ```
+Specify version in  
+gradle-release/gradle.properties
+```
+version=x.y.z
+```
+run
 ```
 gradle publish
 
+```
+return version back in 
+gradle-release/gradle.properties
+```
+version=1.0-SNAPSHOT
 ```

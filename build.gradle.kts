@@ -22,6 +22,7 @@ dependencies {
 
 val repositoryUser by project
 val repositoryPassword by project
+val repositoryLibsReleaseLocal by project
 
 publishing {
     (publications) {
@@ -32,25 +33,13 @@ publishing {
 
     repositories{
         maven{
-
             credentials{
                 username = "$repositoryUser"
                 password = "$repositoryPassword"
             }
 
             name = "ru-fix-repo"
-//            url = URI("http://5.9.100.165:8881/artifactory/ru-fix-repo/")
-//            url = URI("http://5.9.100.165:8881/artifactory/ext-release-local")
-//            url = URI("http://5.9.100.165:8881/artifactory/ru-fix-repo/")
-            url = URI("http://artifactory.vasp/artifactory/libs-release-local/")
-//            authentication{
-//                credentials {
-//                    username = "$repositoryUser"
-//                    password = "$repositoryPassword"
-//
-//                    println("user: $username, password: $password")
-//                }
-//            }
+            url = URI("$repositoryLibsReleaseLocal")
         }
 
     }

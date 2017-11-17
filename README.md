@@ -19,11 +19,15 @@
 gradle publishToMavenLocal
 ```
 
-### Deploy
+### Deploy to remote repository
 Provide credentials for repository:  
 ```
 ~/.gradle/gradle.properties
 
 repositoryUser = user
 repositoryPassword = password
+```
+```
+gradle publish
+
 ```

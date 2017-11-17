@@ -13,7 +13,30 @@
 
 ### Как подключить к проекту
 
+```
+import org.gradle.kotlin.dsl.*
+import ru.fix.gradle.release.plugin.release.ReleaseExtension
 
+buildscript{
+    repositories {
+        maven(url = "http://artifactory.vasp/artifactory/ru-fix-repo/")
+    }
+
+    dependencies {
+        classpath("ru.fix:gradle-release-plugin:1.0.3")
+    }
+}
+
+apply {
+    plugin("release")
+}
+
+configure<ReleaseExtension> {
+    mainBranch = "develop"
+    releaseBranchPrefix = "releases/release-"
+}
+
+```
     
 ### Сборка    
 Собрать и опубликовать в лоакльном m2 repository

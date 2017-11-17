@@ -1,8 +1,8 @@
-package ru.fix.platform.plugin.release
+package ru.fix.gradle.release.plugin.release
 
 import org.eclipse.jgit.lib.Ref
 import org.gradle.api.logging.Logging
-import ru.fix.platform.plugin.release.GitHolder.git
+import ru.fix.gradle.release.plugin.release.GitHolder.git
 
 class GitUtils {
     companion object {

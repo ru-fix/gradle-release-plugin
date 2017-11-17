@@ -1,4 +1,4 @@
-package ru.fix.platform.plugin.release
+package ru.fix.gradle.release.plugin.release
 
 open class ReleaseExtension {
     var mainBranch: String = "develop"

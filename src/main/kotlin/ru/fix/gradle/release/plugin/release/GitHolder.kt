@@ -1,4 +1,4 @@
-package ru.fix.platform.plugin.release
+package ru.fix.gradle.release.plugin.release
 
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder

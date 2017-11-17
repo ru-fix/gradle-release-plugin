@@ -1,4 +1,4 @@
-package ru.fix.platform.plugin.release
+package ru.fix.gradle.release.plugin.release
 
 import com.github.zafarkhaja.semver.Version
 import org.gradle.api.logging.Logging

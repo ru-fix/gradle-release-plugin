@@ -22,7 +22,7 @@ dependencies {
 
 val repositoryUser by project
 val repositoryPassword by project
-val repositoryLibsReleaseLocal by project
+val repositoryUrl by project
 
 publishing {
     (publications) {
@@ -39,7 +39,7 @@ publishing {
             }
 
             name = "ru-fix-repo"
-            url = URI("$repositoryLibsReleaseLocal")
+            url = URI("$repositoryUrl")
         }
 
     }

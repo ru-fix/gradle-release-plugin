@@ -7,6 +7,7 @@ import java.io.File
 
 open class CreateReleaseTask : DefaultTask() {
 
+
     @TaskAction
     fun createRelease() {
 
@@ -51,11 +52,17 @@ open class CreateReleaseTask : DefaultTask() {
             deleteBranch(tempBranch)
 
 
-            val gitLogin = project.property("git.login").toString()
-            val gitPassword = project.property("git.password").toString()
-            logger.lifecycle("Pushing with login $gitLogin and password $gitPassword")
+            if (project.hasProperty(GitUtils.GIT_LOGIN_PARAMETER)
+                    && project.hasProperty(GitUtils.GIT_PASSWORD_PARAMETER)) {
 
-            pushTag(gitLogin, gitPassword, tagRef)
+                val gitLogin = project.property(GitUtils.GIT_LOGIN_PARAMETER).toString()
+                val gitPassword = project.property(GitUtils.GIT_PASSWORD_PARAMETER).toString()
+                logger.lifecycle("Pushing with login $gitLogin and password $gitPassword")
+                pushTag(gitLogin, gitPassword, tagRef)
+
+            } else {
+                logger.lifecycle("Git credentials weren't supplied, skipping push stage")
+            }
 
             logger.lifecycle("Completed successfully")
         }

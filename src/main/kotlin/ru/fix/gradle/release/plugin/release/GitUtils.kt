@@ -8,6 +8,11 @@ import ru.fix.gradle.release.plugin.release.GitHolder.git
 class GitUtils {
     companion object {
 
+
+        const val GIT_LOGIN_PARAMETER = "git.login"
+        const val GIT_PASSWORD_PARAMETER = "git.password"
+
+
         private val logger = Logging.getLogger("GitUtils")!!
 
         fun getCurrentBranch(): String = GitHolder.git.repository.branch

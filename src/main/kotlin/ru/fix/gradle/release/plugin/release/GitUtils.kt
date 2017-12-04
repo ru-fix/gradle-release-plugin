@@ -1,6 +1,7 @@
 package ru.fix.gradle.release.plugin.release
 
 import org.eclipse.jgit.lib.Ref
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import org.gradle.api.logging.Logging
 import ru.fix.gradle.release.plugin.release.GitHolder.git
 
@@ -64,7 +65,7 @@ class GitUtils {
 
 
         fun commitFilesInIndex(commitMessage: String) {
-            println("Commiting files")
+            logger.lifecycle("Commiting files")
 
             GitHolder.git.add().addFilepattern(".")
                     .call()
@@ -74,6 +75,18 @@ class GitUtils {
 
         }
 
+        fun pushTag(userName: String, password: String, tagRef: Ref) {
+            logger.lifecycle("Pushing tag $tagRef to remote repository")
+
+            val pushCommand = GitHolder.git.push()
+
+            with(pushCommand) {
+                add(tagRef)
+                setCredentialsProvider(UsernamePasswordCredentialsProvider(userName, password))
+                call()
+            }
+
+        }
 
     }
 

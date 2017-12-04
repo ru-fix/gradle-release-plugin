@@ -35,21 +35,30 @@ open class CreateReleaseTask : DefaultTask() {
 
         val tempBranch = "final_${extension.releaseBranchPrefix}$version"
 
-        if (GitUtils.isBranchExists(tempBranch)) {
-            throw GradleException("Temporary branch $tempBranch already exists. Please delete it first")
+        with(GitUtils) {
+
+            if (isBranchExists(tempBranch)) {
+                throw GradleException("Temporary branch $tempBranch already exists. Please delete it first")
+            }
+
+            createBranch(tempBranch, true)
+            fileList.forEach { VersionUtils.updateVersionInFile(it.absolutePath, version) }
+
+            commitFilesInIndex("Updating version to $version")
+            val tagRef = createTag(version, "Release $version")
+
+            checkout(branch)
+            deleteBranch(tempBranch)
+
+
+            val gitLogin = project.property("git.login").toString()
+            val gitPassword = project.property("git.password").toString()
+            logger.lifecycle("Pushing with login $gitLogin and password $gitPassword")
+
+            pushTag(gitLogin, gitPassword, tagRef)
+
+            logger.lifecycle("Completed successfully")
         }
-
-        GitUtils.createBranch(tempBranch, true)
-
-        fileList.forEach { VersionUtils.updateVersionInFile(it.absolutePath, version) }
-
-        GitUtils.commitFilesInIndex("Updating version to $version")
-        GitUtils.createTag(version, "Release $version")
-
-        GitUtils.checkout(branch)
-        GitUtils.deleteBranch(tempBranch)
-
-        //TODO: push
     }
 
     private fun checkValidBranch(branchPrefix: String, currentBranch: String) {

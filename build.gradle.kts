@@ -2,16 +2,36 @@ import org.gradle.api.tasks.bundling.Jar
 import org.gradle.internal.authentication.DefaultBasicAuthentication
 import java.net.URI
 
+buildscript {
+    repositories {
+        maven(url = "http://artifactory.vasp/artifactory/ru-fix-repo/")
+        jcenter()
+    }
 
-plugins {
-    kotlin("jvm") version "1.1.60"
-    `maven-publish`
+    dependencies {
+        classpath("ru.fix:jfix-release-gradle-plugin:1.0.0")
+    }
 
 }
 
 repositories {
+    maven(url = "http://artifactory.vasp/artifactory/ru-fix-repo/")
     jcenter()
 }
+
+
+
+
+plugins {
+    kotlin("jvm") version "1.1.60"
+    `maven-publish`
+}
+
+apply {
+    plugin("release")
+}
+
+
 
 dependencies {
     compile(kotlin("stdlib", "1.1.60"))

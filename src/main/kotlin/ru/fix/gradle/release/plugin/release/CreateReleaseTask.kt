@@ -14,6 +14,19 @@ open class CreateReleaseTask : DefaultTask() {
         var extension = project.extensions.findByType(ReleaseExtension::class.java)
         extension = checkNotNull(extension)
 
+        if (project.hasProperty("baseVersion")) {
+            val baseVersion = project.property("baseVersion").toString()
+
+            if (!VersionUtils.isValidBranchVersion(baseVersion)) {
+                throw GradleException("Invalid base version: $baseVersion. Should be in x.y format")
+            }
+
+            val targetBranch = "${extension.releaseBranchPrefix}$baseVersion"
+            if (GitUtils.getCurrentBranch() != targetBranch) {
+                project.logger.lifecycle("Switching to release branch $targetBranch")
+                GitUtils.checkoutBranch(targetBranch)
+            }
+        }
 
         val branch = GitUtils.getCurrentBranch();
 
@@ -48,7 +61,14 @@ open class CreateReleaseTask : DefaultTask() {
             commitFilesInIndex("Updating version to $version")
             val tagRef = createTag(version, "Release $version")
 
-            checkout(branch)
+
+            if (project.hasProperty("checkoutTag") &&
+                    project.property("checkoutTag").toString().toBoolean()) {
+                checkoutTag(version)
+            } else {
+                checkoutBranch(branch)
+            }
+
             deleteBranch(tempBranch)
 
 

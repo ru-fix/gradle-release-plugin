@@ -40,10 +40,20 @@ class GitUtils {
             }
         }
 
-        fun checkout(branch: String): Ref {
-            logger.lifecycle("Checkout to branch $branch")
-            return GitHolder.git.checkout().setName(branch).call()
+        fun checkoutBranch(branch: String): Ref {
+            logger.lifecycle("Checkout $branch branch")
+            return GitHolder.git.checkout()
+                    .setName(branch).call()
         }
+
+        fun checkoutTag(tag: String) {
+            logger.lifecycle("Checkout $tag tag")
+            GitHolder.git.checkout()
+                    .setCreateBranch(true)
+                    .setName("tags/$tag")
+                    .call()
+        }
+
 
         fun createTag(name: String, comment: String): Ref {
 

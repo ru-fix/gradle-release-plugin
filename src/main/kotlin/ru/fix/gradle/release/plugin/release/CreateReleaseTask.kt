@@ -21,7 +21,14 @@ open class CreateReleaseTask : DefaultTask() {
                 throw GradleException("Invalid base version: $baseVersion. Should be in x.y format")
             }
 
-            val targetBranch = "${extension.releaseBranchPrefix}$baseVersion"
+
+            val useRemote = project.hasProperty("useRemoteBranch") &&
+                    project.property("useRemoteBranch").toString().toBoolean()
+
+
+            val prefix  = if(useRemote) {"origin/"} else {""}
+
+            val targetBranch = "$prefix${extension.releaseBranchPrefix}$baseVersion"
             if (GitUtils.getCurrentBranch() != targetBranch) {
                 project.logger.lifecycle("Switching to release branch $targetBranch")
                 GitUtils.checkoutBranch(targetBranch)

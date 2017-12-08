@@ -41,20 +41,23 @@ class GitUtils {
             }
         }
 
-        fun checkoutBranch(branch: String, remote: Boolean): Ref {
-            return if (!remote) {
+        fun checkoutBranch(branch: String, remote: Boolean) {
+            if (!remote) {
                 logger.lifecycle("Checkout local branch $branch")
                 GitHolder.git.checkout()
                         .setCreateBranch(true)
                         .setName(branch).call()
             } else {
                 logger.lifecycle("Checkout remote branch $branch")
-                GitHolder.git.checkout()
-                        .setCreateBranch(true)
-                        .setName(branch)
-                        .setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.SET_UPSTREAM)
-                        .setStartPoint("origin/$branch")
-                        .call()
+
+                if (!isBranchExists(branch)) {
+                    GitHolder.git.checkout()
+                            .setCreateBranch(true)
+                            .setName(branch)
+                            .setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.SET_UPSTREAM)
+                            .setStartPoint("origin/$branch")
+                            .call()
+                }
             }
 
         }

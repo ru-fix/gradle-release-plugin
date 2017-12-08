@@ -91,6 +91,7 @@ open class CreateReleaseTask : DefaultTask() {
     }
 
     private fun checkValidBranch(branchPrefix: String, currentBranch: String) {
+        logger.lifecycle("Checking branch $currentBranch for validity")
         if (!Regex("$branchPrefix(\\d+)\\.(\\d+)").matches(currentBranch)) {
             throw GradleException("Invalid release branch")
         }

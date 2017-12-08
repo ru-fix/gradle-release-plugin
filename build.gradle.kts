@@ -9,7 +9,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("ru.fix:jfix-release-gradle-plugin:1.2.1")
+        classpath("ru.fix:jfix-release-gradle-plugin:1.2.4")
     }
 
 }

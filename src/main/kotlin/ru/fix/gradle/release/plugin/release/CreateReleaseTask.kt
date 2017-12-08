@@ -91,6 +91,7 @@ open class CreateReleaseTask : DefaultTask() {
                 logger.lifecycle("Git credentials weren't supplied, skipping push stage")
             }
 
+            project.setProperty("version", version)
             logger.lifecycle("Completed successfully")
         }
     }

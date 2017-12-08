@@ -38,6 +38,10 @@ dependencies {
     compile(gradleApi())
     compile("org.eclipse.jgit:org.eclipse.jgit:4.9.0.201710071750-r")
     compile("com.github.zafarkhaja:java-semver:0.9.0")
+
+    compile("com.jcraft:jsch.agentproxy.jsch:0.0.9")
+    compile("com.jcraft:jsch.agentproxy.usocket-jna:0.0.9")
+    compile("com.jcraft:jsch.agentproxy.sshagent:0.0.9")
 }
 
 val repositoryUser by project
@@ -53,9 +57,9 @@ publishing {
 
     }
 
-    repositories{
-        maven{
-            credentials{
+    repositories {
+        maven {
+            credentials {
                 username = "$repositoryUser"
                 password = "$repositoryPassword"
             }

@@ -1,14 +1,21 @@
 package ru.fix.gradle.release.plugin.release
 
+import com.jcraft.jsch.JSch
+import com.jcraft.jsch.JSchException
 import com.jcraft.jsch.Session
+import com.jcraft.jsch.agentproxy.RemoteIdentityRepository
+import com.jcraft.jsch.agentproxy.connector.SSHAgentConnector
+import com.jcraft.jsch.agentproxy.usocket.JNAUSocketFactory
 import org.eclipse.jgit.api.CreateBranchCommand
 import org.eclipse.jgit.lib.Ref
-import org.eclipse.jgit.transport.JschConfigSessionFactory
-import org.eclipse.jgit.transport.OpenSshConfig.Host
-import org.eclipse.jgit.transport.SshTransport
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
+import org.eclipse.jgit.transport.*
+import org.eclipse.jgit.util.FS
 import org.gradle.api.logging.Logging
 import ru.fix.gradle.release.plugin.release.GitHolder.git
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileNotFoundException
+import java.io.IOException
 
 
 class GitUtils {
@@ -124,23 +131,72 @@ class GitUtils {
         }
 
         fun pushTagViaSsh(tagRef: Ref) {
-            val sshSessionFactory = object : JschConfigSessionFactory() {
-                override fun configure(host: Host, session: Session) {
-                    session.setConfig("StrictHostKeyChecking", "no")
-                    // do nothing
+
+            val sessionFactory = object : JschConfigSessionFactory() {
+
+
+                override fun configure(host: OpenSshConfig.Host, session: Session) {
+                    logger.lifecycle("Configure session")
+                    // This can be removed, but the overriden method is required since JschConfigSessionFactory is abstract
+                    session.setConfig("StrictHostKeyChecking", "false")
+                }
+
+                override fun createDefaultJSch(fs: FS): JSch {
+                    var con: SSHAgentConnector? = null
+
+                    if (SSHAgentConnector.isConnectorAvailable()) {
+                        val usf = JNAUSocketFactory()
+                        con = SSHAgentConnector(usf)
+                    }
+
+                    if (con == null) {
+                        logger.lifecycle("Using default jsch")
+                        return super.createDefaultJSch(fs)
+                    } else {
+                        logger.lifecycle("Using not-default jsch")
+                        val jsch = JSch()
+                        JSch.setConfig("PreferredAuthentications", "publickey");
+                        val irepo = RemoteIdentityRepository(con);
+                        jsch.identityRepository = irepo;
+                        knownHosts(jsch, fs) // private method from parent class, yeah for Groovy!
+                        return jsch
+                    }
                 }
             }
-            val pushCommand = GitHolder.git.push().setTransportConfigCallback {
-                val sshTransport = it as SshTransport
-                sshTransport.sshSessionFactory = sshSessionFactory
-            }
 
-            with(pushCommand) {
-                add(tagRef)
-                call()
+
+            SshSessionFactory.setInstance(sessionFactory)
+
+
+            GitHolder.git.push()
+                    .setTransportConfigCallback({
+                        val sshTransport = it as SshTransport
+                        sshTransport.sshSessionFactory = sessionFactory
+                    })
+                    .add(tagRef)
+                    .call()
+        }
+
+
+        @Throws(JSchException::class)
+        private fun knownHosts(sch: JSch, fs: FS) {
+            val home = fs.userHome() ?: return
+            val known_hosts = File(File(home, ".ssh"), "known_hosts") //$NON-NLS-1$ //$NON-NLS-2$
+            try {
+                val `in` = FileInputStream(known_hosts)
+                try {
+                    sch.setKnownHosts(`in`)
+                } finally {
+                    `in`.close()
+                }
+            } catch (none: FileNotFoundException) {
+                // Oh well. They don't have a known hosts in home.
+            } catch (err: IOException) {
+                // Oh well. They don't have a known hosts in home.
             }
 
         }
+
 
     }
 

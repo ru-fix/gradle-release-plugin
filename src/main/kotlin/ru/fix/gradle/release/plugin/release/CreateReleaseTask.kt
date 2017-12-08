@@ -22,11 +22,15 @@ open class CreateReleaseTask : DefaultTask() {
             }
 
 
-
             val targetBranch = "${extension.releaseBranchPrefix}$baseVersion"
             if (GitUtils.getCurrentBranch() != targetBranch) {
                 project.logger.lifecycle("Switching to release branch $targetBranch")
-                GitUtils.checkoutBranch(targetBranch)
+
+                val remote = project.hasProperty("remoteCheckout")
+                        && project.property("remoteCheckout")
+                        .toString().toBoolean()
+
+                GitUtils.checkoutBranch(targetBranch, remote)
             }
         }
 
@@ -68,7 +72,7 @@ open class CreateReleaseTask : DefaultTask() {
                     project.property("checkoutTag").toString().toBoolean()) {
                 checkoutTag(version)
             } else {
-                checkoutBranch(branch)
+                checkoutBranch(branch, false)
             }
 
             deleteBranch(tempBranch)

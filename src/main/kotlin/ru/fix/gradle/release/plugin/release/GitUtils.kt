@@ -1,5 +1,6 @@
 package ru.fix.gradle.release.plugin.release
 
+import org.eclipse.jgit.api.CreateBranchCommand
 import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import org.gradle.api.logging.Logging
@@ -40,11 +41,22 @@ class GitUtils {
             }
         }
 
-        fun checkoutBranch(branch: String): Ref {
-            logger.lifecycle("Checkout $branch branch")
-            return GitHolder.git.checkout()
-                    .setCreateBranch(true)
-                    .setName(branch).call()
+        fun checkoutBranch(branch: String, remote: Boolean): Ref {
+            return if (!remote) {
+                logger.lifecycle("Checkout local branch $branch")
+                GitHolder.git.checkout()
+                        .setCreateBranch(true)
+                        .setName(branch).call()
+            } else {
+                logger.lifecycle("Checkout remote branch $branch")
+                GitHolder.git.checkout()
+                        .setCreateBranch(true)
+                        .setName(branch)
+                        .setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.SET_UPSTREAM)
+                        .setStartPoint("origin/$branch")
+                        .call()
+            }
+
         }
 
         fun checkoutTag(tag: String) {

@@ -22,13 +22,8 @@ open class CreateReleaseTask : DefaultTask() {
             }
 
 
-            val useRemote = project.hasProperty("useRemoteBranch") &&
-                    project.property("useRemoteBranch").toString().toBoolean()
 
-
-            val prefix  = if(useRemote) {"origin/"} else {""}
-
-            val targetBranch = "$prefix${extension.releaseBranchPrefix}$baseVersion"
+            val targetBranch = "${extension.releaseBranchPrefix}$baseVersion"
             if (GitUtils.getCurrentBranch() != targetBranch) {
                 project.logger.lifecycle("Switching to release branch $targetBranch")
                 GitUtils.checkoutBranch(targetBranch)
@@ -91,7 +86,6 @@ open class CreateReleaseTask : DefaultTask() {
                 logger.lifecycle("Git credentials weren't supplied, skipping push stage")
             }
 
-            project.setProperty("version", version)
             logger.lifecycle("Completed successfully")
         }
     }

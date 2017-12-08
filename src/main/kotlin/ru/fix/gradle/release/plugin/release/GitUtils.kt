@@ -43,6 +43,7 @@ class GitUtils {
         fun checkoutBranch(branch: String): Ref {
             logger.lifecycle("Checkout $branch branch")
             return GitHolder.git.checkout()
+                    .setCreateBranch(true)
                     .setName(branch).call()
         }
 

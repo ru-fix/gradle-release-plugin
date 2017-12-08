@@ -87,7 +87,8 @@ open class CreateReleaseTask : DefaultTask() {
                 pushTag(gitLogin, gitPassword, tagRef)
 
             } else {
-                logger.lifecycle("Git credentials weren't supplied, skipping push stage")
+                logger.lifecycle("Git credentials weren't supplied, pushing via ssh")
+                pushTagViaSsh(tagRef)
             }
 
             logger.lifecycle("Completed successfully")

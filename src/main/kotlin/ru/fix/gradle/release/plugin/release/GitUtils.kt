@@ -1,10 +1,15 @@
 package ru.fix.gradle.release.plugin.release
 
+import com.jcraft.jsch.Session
 import org.eclipse.jgit.api.CreateBranchCommand
 import org.eclipse.jgit.lib.Ref
+import org.eclipse.jgit.transport.JschConfigSessionFactory
+import org.eclipse.jgit.transport.OpenSshConfig.Host
+import org.eclipse.jgit.transport.SshTransport
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import org.gradle.api.logging.Logging
 import ru.fix.gradle.release.plugin.release.GitHolder.git
+
 
 class GitUtils {
     companion object {
@@ -113,6 +118,25 @@ class GitUtils {
             with(pushCommand) {
                 add(tagRef)
                 setCredentialsProvider(UsernamePasswordCredentialsProvider(userName, password))
+                call()
+            }
+
+        }
+
+        fun pushTagViaSsh(tagRef: Ref) {
+            val sshSessionFactory = object : JschConfigSessionFactory() {
+                override fun configure(host: Host, session: Session) {
+                    session.setConfig("StrictHostKeyChecking", "no")
+                    // do nothing
+                }
+            }
+            val pushCommand = GitHolder.git.push().setTransportConfigCallback {
+                val sshTransport = it as SshTransport
+                sshTransport.sshSessionFactory = sshSessionFactory
+            }
+
+            with(pushCommand) {
+                add(tagRef)
                 call()
             }
 

@@ -19,10 +19,8 @@ class GitUtils {
         fun getCurrentBranch(): String = GitHolder.git.repository.branch
 
         fun isBranchExists(branch: String): Boolean {
-
-
             return GitHolder.git.branchList().call()
-                    .stream().filter { branch == it.name }
+                    .stream().filter { "refs/heads/$branch" == it.name }
                     .findAny().isPresent
         }
 
@@ -45,11 +43,9 @@ class GitUtils {
             if (!remote) {
                 logger.lifecycle("Checkout local branch $branch")
                 GitHolder.git.checkout()
-                        .setCreateBranch(true)
                         .setName(branch).call()
             } else {
                 logger.lifecycle("Checkout remote branch $branch")
-
                 if (!isBranchExists(branch)) {
                     GitHolder.git.checkout()
                             .setCreateBranch(true)
@@ -57,6 +53,9 @@ class GitUtils {
                             .setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.SET_UPSTREAM)
                             .setStartPoint("origin/$branch")
                             .call()
+                } else {
+                    GitHolder.git.checkout()
+                            .setName(branch).call()
                 }
             }
 

@@ -57,13 +57,6 @@ open class CreateReleaseTask : DefaultTask() {
 
         with(GitUtils) {
 
-            if (isCredentialsSupplied()) {
-                pull(project.property(GitUtils.GIT_LOGIN_PARAMETER).toString(),
-                        project.property(GitUtils.GIT_PASSWORD_PARAMETER).toString())
-            } else {
-                pullViaSsh()
-            }
-
             if (isBranchExists(tempBranch)) {
                 throw GradleException("Temporary branch $tempBranch already exists. Please delete it first")
             }

@@ -130,43 +130,6 @@ class GitUtils {
 
         }
 
-        fun pull(userName: String, password: String) {
-            logger.lifecycle("Pulling branch")
-
-            setRemoteConfig()
-            GitHolder.git.pull()
-                    .setRemoteBranchName("refs/heads/${getCurrentBranch()}")
-                    .setCredentialsProvider(UsernamePasswordCredentialsProvider(userName, password))
-                    .call()
-        }
-
-
-
-        fun pullViaSsh() {
-            logger.lifecycle("Pulling branch via ssh")
-            val sessionFactory = createFactory()
-            SshSessionFactory.setInstance(sessionFactory)
-
-            setRemoteConfig()
-
-            GitHolder.git
-                    .pull()
-                    .setTransportConfigCallback({
-                        val sshTransport = it as SshTransport
-                        sshTransport.sshSessionFactory = sessionFactory
-                    })
-                    .call()
-        }
-
-        private fun setRemoteConfig() {
-
-            val config = git.repository.config
-            if (config is RemoteConfig) {
-                logger.lifecycle("Updating remote config")
-                config.addFetchRefSpec(RefSpec("refs/heads/${getCurrentBranch()}"))
-            }
-        }
-        
         fun pushTagViaSsh(tagRef: Ref) {
 
             val sessionFactory = createFactory()

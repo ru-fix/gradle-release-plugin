@@ -130,10 +130,42 @@ class GitUtils {
 
         }
 
+        fun pull(userName: String, password: String) {
+            GitHolder.git.pull()
+                    .setCredentialsProvider(UsernamePasswordCredentialsProvider(userName, password))
+                    .call()
+        }
+
+        fun pullViaSsh() {
+            val sessionFactory = createFactory()
+            SshSessionFactory.setInstance(sessionFactory)
+
+            GitHolder.git
+                    .pull()
+                    .setTransportConfigCallback({
+                        val sshTransport = it as SshTransport
+                        sshTransport.sshSessionFactory = sessionFactory
+                    })
+                    .call()
+        }
+
         fun pushTagViaSsh(tagRef: Ref) {
 
-            val sessionFactory = object : JschConfigSessionFactory() {
+            val sessionFactory = createFactory()
+            SshSessionFactory.setInstance(sessionFactory)
 
+            GitHolder.git.push()
+                    .setTransportConfigCallback({
+                        val sshTransport = it as SshTransport
+                        sshTransport.sshSessionFactory = sessionFactory
+                    })
+                    .add(tagRef)
+                    .call()
+        }
+
+        private fun createFactory(): JschConfigSessionFactory {
+
+            return object : JschConfigSessionFactory() {
 
                 override fun configure(host: OpenSshConfig.Host, session: Session) {
                     logger.lifecycle("Configure session")
@@ -163,18 +195,6 @@ class GitUtils {
                     }
                 }
             }
-
-
-            SshSessionFactory.setInstance(sessionFactory)
-
-
-            GitHolder.git.push()
-                    .setTransportConfigCallback({
-                        val sshTransport = it as SshTransport
-                        sshTransport.sshSessionFactory = sessionFactory
-                    })
-                    .add(tagRef)
-                    .call()
         }
 
 

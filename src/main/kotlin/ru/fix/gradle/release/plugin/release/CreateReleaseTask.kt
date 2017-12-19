@@ -57,6 +57,13 @@ open class CreateReleaseTask : DefaultTask() {
 
         with(GitUtils) {
 
+            if (isCredentialsSupplied()) {
+                pull(project.property(GitUtils.GIT_LOGIN_PARAMETER).toString(),
+                        project.property(GitUtils.GIT_PASSWORD_PARAMETER).toString())
+            } else {
+                pullViaSsh()
+            }
+
             if (isBranchExists(tempBranch)) {
                 throw GradleException("Temporary branch $tempBranch already exists. Please delete it first")
             }
@@ -78,9 +85,7 @@ open class CreateReleaseTask : DefaultTask() {
             deleteBranch(tempBranch)
 
 
-            if (project.hasProperty(GitUtils.GIT_LOGIN_PARAMETER)
-                    && project.hasProperty(GitUtils.GIT_PASSWORD_PARAMETER)) {
-
+            if (isCredentialsSupplied()) {
                 val gitLogin = project.property(GitUtils.GIT_LOGIN_PARAMETER).toString()
                 val gitPassword = project.property(GitUtils.GIT_PASSWORD_PARAMETER).toString()
                 logger.lifecycle("Pushing with login $gitLogin and password $gitPassword")
@@ -100,6 +105,11 @@ open class CreateReleaseTask : DefaultTask() {
         if (!Regex("$branchPrefix(\\d+)\\.(\\d+)").matches(currentBranch)) {
             throw GradleException("Invalid release branch")
         }
+    }
+
+    private fun isCredentialsSupplied(): Boolean {
+        return project.hasProperty(GitUtils.GIT_LOGIN_PARAMETER)
+                && project.hasProperty(GitUtils.GIT_PASSWORD_PARAMETER);
     }
 
 }

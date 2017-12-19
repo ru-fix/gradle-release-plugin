@@ -131,17 +131,21 @@ class GitUtils {
         }
 
         fun pull(userName: String, password: String) {
+            logger.lifecycle("Pulling branch")
             GitHolder.git.pull()
+                    .setRemoteBranchName("refs/heads/${getCurrentBranch()}")
                     .setCredentialsProvider(UsernamePasswordCredentialsProvider(userName, password))
                     .call()
         }
 
         fun pullViaSsh() {
+            logger.lifecycle("Pulling branch via ssh")
             val sessionFactory = createFactory()
             SshSessionFactory.setInstance(sessionFactory)
 
             GitHolder.git
                     .pull()
+                    .setRemoteBranchName("refs/heads/${getCurrentBranch()}")
                     .setTransportConfigCallback({
                         val sshTransport = it as SshTransport
                         sshTransport.sshSessionFactory = sessionFactory

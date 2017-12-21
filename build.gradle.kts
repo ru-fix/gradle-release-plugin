@@ -52,7 +52,7 @@ publishing {
     (publications) {
         "mavenJava"(MavenPublication::class) {
             from(components["java"])
-            artifactId = "jfix-release-gradle-plugin"
+            artifactId = "gradle-release-plugin"
         }
 
     }

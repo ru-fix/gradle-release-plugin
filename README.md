@@ -24,7 +24,7 @@ buildscript{
     }
 
     dependencies {
-        classpath("ru.fix:jfix-release-gradle-plugin:1.1.1")
+        classpath("ru.fix:gradle-release-plugin:1.2.14")
     }
 }
 

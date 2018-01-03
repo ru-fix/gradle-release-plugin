@@ -2,39 +2,18 @@ import org.gradle.api.tasks.bundling.Jar
 import org.gradle.internal.authentication.DefaultBasicAuthentication
 import java.net.URI
 
-buildscript {
-    repositories {
-        maven(url = "http://artifactory.vasp/artifactory/ru-fix-repo/")
-        jcenter()
-    }
-
-    dependencies {
-        classpath("ru.fix:jfix-release-gradle-plugin:1.2.4")
-    }
-
-}
-
 repositories {
-    maven(url = "http://artifactory.vasp/artifactory/ru-fix-repo/")
+    mavenCentral()
     jcenter()
 }
 
-
-
-
 plugins {
-    kotlin("jvm") version "1.1.60"
+    kotlin("jvm") version "1.1.61"
     `maven-publish`
 }
 
-apply {
-    plugin("release")
-}
-
-
-
 dependencies {
-    compile(kotlin("stdlib", "1.1.60"))
+    compile(kotlin("stdlib", "1.1.61"))
     compile(gradleApi())
     compile("org.eclipse.jgit:org.eclipse.jgit:4.9.0.201710071750-r")
     compile("com.github.zafarkhaja:java-semver:0.9.0")
@@ -52,6 +31,7 @@ publishing {
     (publications) {
         "mavenJava"(MavenPublication::class) {
             from(components["java"])
+            groupId = "ru.fix"
             artifactId = "gradle-release-plugin"
         }
 
@@ -63,12 +43,9 @@ publishing {
                 username = "$repositoryUser"
                 password = "$repositoryPassword"
             }
-
-            name = "ru-fix-repo"
+            name = "remoteRepository"
             url = URI("$repositoryUrl")
         }
 
     }
 }
-
-

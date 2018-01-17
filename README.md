@@ -1,20 +1,31 @@
+gradle-release-plugin automate release procedure for gradle based projects. It automatically 
+creates release branches, update project version in `gradle.properties` file and commit this 
+update in dynamically created tag with autoincremented version.
+
 # Usages
 
 ## Plugin tasks
 
- * createReleaseBranch - creates new branch in local git repository, by default release-x.y. Asks user to provide 
- major and minor version x.y
- * createRelease - Search for existing tags in repository. Increment version, store in gradle.properties file. Then
- commit gradle.properties file with tag name into repository. User should run createRelease task on one of release 
- branches.
- Parameters: -Pgit.login=<git.login> -Pgit.password=<git.password>
+ * createReleaseBranch - creates new branch in local git repository. By default base branch name
+ is `/develop` and target branch name is `/release-x.y`. During execution command asks user 
+ to specify major and minor version `x.y`
+ 
+ * createRelease - Search for existing tags in repository that name matches version template
+ `x.y.z`.  
+  Finds latest one.  
+  Calculates new version by incrementing latest one.  
+  Stores new version in `gradle.properties` file.   
+  Commit `gradle.properties` file with new tag name `x.y.z+1` into repository.  
+  User should run createRelease task on one of release branches.  
+  Parameters: `-Pgit.login=<git.login>` `-Pgit.password=<git.password>`
     
 Configuration:
- * mainBranch: String - base branch name, by default - "develop"
- * releaseBranchPrefix: String - prefix for release branch, by default - "releases/release-"
+ * mainBranch: String - base branch name, by default - `/develop`
+ * releaseBranchPrefix: String - prefix for release branch, by default - `/releases/release-`
 
 ### How to use in projects build
 
+Add plugin to project gradle build script
 ```
 import org.gradle.kotlin.dsl.*
 import ru.fix.gradle.release.plugin.release.ReleaseExtension
@@ -35,6 +46,22 @@ configure<ReleaseExtension> {
     releaseBranchPrefix = "releases/release-"
 }
 ```
+Manually create branch `/develop` with latest version of project.  
+Create new release branch with gradle plugin `gradle createReleaseBranch`  and specify 
+version `1.1`.  
+This will create new branch `/develop` -> `/releases/release-1.1`  
+Checkout branch `/releases/release-1.1`  
+Create new tag with gradle plugin `gradle createRelease`  
+This will create new tag `1.1.1`
+Checkout tag `1.1.1`  
+Build and publish your project `gradle clean build publish`
+
+Now you can commit fixes to `/release/release-1.1` and create new tag:  
+`gradle createRelease` will create new tag `1.1.2`.
+
+If you decided new publish new version based on `/develop` branch you can create new release
+branch `gradle createReleaseBranch` and specify version `1.2`.  
+This will create new branch `/develop` -> `/releases/release-1.2`
 
 ## Release flow
 ### Principles

@@ -79,14 +79,15 @@ specify particular `version=x.y.z`
 
 ### Release procedure
 Suppose that we already have last version of project in `/develop` branch, and release `/releases/release-1.2`
-- New branch is created based on `/develop`. Branch name is `/releases/release-1.3`. Plugin task `createRelease` 
+- New branch is created based on `/develop`. Branch name is `/releases/release-1.3`. Plugin task `createReleaseBranch` 
 could be used for that purpose.
 - Version inside `gradle.properties` does not changes, it stays `1.0-SNAPSHOT`
-- New branch `/releases/release-1.3` is stabilized, new changes is added through Merge Requests.
-- When branch `/releases/release-1.3` is ready user launches CI build server release task and specify given branch
- (/releases/release-1.3)
-- CI build server release task starts gradle and provide Gradle Release Plugin command: createRelease
-- plugin searches in local git repository for all tags that matches `1.3.*` template, if there is no such tag found 
+- New branch `/releases/release-1.3` is stabilized, and changes is added through Merge Requests.
+- When branch `/releases/release-1.3` is ready, user launches CI build server release task and specify given branch
+ `/releases/release-1.3`
+- CI build server task checkout `/releases/release-1.3` branch, then executes gradle command `gradle createRelease`
+- gradle plugin searches in local git repository for all tags that matches `1.3.*` template, if there is no such 
+tag found 
 then default `1.3.1` will be used. Otherwise max tag will be incremented, e.g. if plugin find `1.3.7` then new tag 
 name will be `1.3.8`  
 - In file `gradle.properties` `version` property is replaced from `1.0-SNAPSHOT` to `1.3.8`

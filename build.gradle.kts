@@ -8,12 +8,12 @@ repositories {
 }
 
 plugins {
-    kotlin("jvm") version "1.1.61"
+    kotlin("jvm") version "1.2.10"
     `maven-publish`
 }
 
 dependencies {
-    compile(kotlin("stdlib", "1.1.61"))
+    compile(kotlin("stdlib", "1.2.10"))
     compile(gradleApi())
     compile("org.eclipse.jgit:org.eclipse.jgit:4.9.0.201710071750-r")
     compile("com.github.zafarkhaja:java-semver:0.9.0")

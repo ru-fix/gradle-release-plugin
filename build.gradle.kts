@@ -7,24 +7,27 @@ import java.net.URI
 buildscript {
 
     repositories {
-        mavenCentral()
         jcenter()
+        gradlePluginPortal()
+        mavenCentral()
     }
 
     dependencies {
-        classpath("org.jetbrains.dokka:dokka-gradle-plugin:${Vers.dokka}")
+        classpath("org.jetbrains.dokka:dokka-gradle-plugin:${Vers.dokkav}")
     }
 }
 
 repositories {
-    mavenCentral()
     jcenter()
+    gradlePluginPortal()
+    mavenCentral()
 }
 
 plugins {
     kotlin("jvm") version "${Vers.kotlin}"
     `maven-publish`
-//    id("org.jetbrains.dokka") version "${Vers.dokka}"
+
+    id("org.jetbrains.dokka") version "${Vers.dokkav}"
 
 }
 
@@ -39,11 +42,6 @@ dependencies {
     compile("com.jcraft:jsch.agentproxy.sshagent:0.0.9")
 }
 
-//
-//dokka {
-//
-//}
-
 val repositoryUser by project
 val repositoryPassword by project
 val repositoryUrl by project
@@ -57,6 +55,11 @@ publishing {
                 classifier = "sources"
                 from("src/main/java")
                 from("src/main/kotlin")
+            }
+
+            val javadocJar by tasks.creating(Jar::class) {
+                classifier = "javadoc"
+                dependsOn(javadocJar)
             }
 
             "${project.name}-mvnPublication"(MavenPublication::class) {

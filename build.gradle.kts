@@ -57,9 +57,25 @@ publishing {
                 from("src/main/kotlin")
             }
 
+//            task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
+//                outputFormat = 'javadoc'
+//                outputDirectory = javadoc.destinationDir
+//                inputs.dir 'src/main/kotlin'
+//            }
+//
+//            task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
+//                classifier = 'javadoc'
+//                from javadoc.destinationDir
+//            }
+
+            val dokkaJavadoc by tasks.creating(org.jetbrains.dokka.gradle.DokkaTask::class) {
+                outputFormat = "javadoc"
+            }
+
             val javadocJar by tasks.creating(Jar::class) {
                 classifier = "javadoc"
-                dependsOn(javadocJar)
+                from(dokkaJavadoc.outputDirectory)
+                dependsOn(dokkaJavadoc)
             }
 
             "${project.name}-mvnPublication"(MavenPublication::class) {
@@ -67,7 +83,9 @@ publishing {
                 from(components["java"])
                 groupId = "ru.fix"
                 artifactId = "gradle-release-plugin"
+
                 artifact(sourcesJar)
+                artifact(javadocJar)
 
                 pom.withXml {
                     asNode().apply {

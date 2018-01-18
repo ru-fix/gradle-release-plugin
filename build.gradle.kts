@@ -29,10 +29,21 @@ val repositoryUrl by project
 
 publishing {
     (publications) {
-        "mavenJava"(MavenPublication::class) {
-            from(components["java"])
-            groupId = "ru.fix"
-            artifactId = "gradle-release-plugin"
+        if (components.names.contains("java")) {
+            logger.info("Register java artifact for project: ${project.name}")
+
+            val sourcesJar by tasks.creating(Jar::class) {
+                classifier = "sources"
+                from("src/main/java")
+                from("src/main/kotlin")
+            }
+
+            "${project.name}-mvnPublication"(MavenPublication::class) {
+                from(components["java"])
+                groupId = "ru.fix"
+                artifactId = "gradle-release-plugin"
+                artifact(sourcesJar)
+            }
         }
 
     }

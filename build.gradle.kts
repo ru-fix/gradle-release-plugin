@@ -1,6 +1,20 @@
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.internal.authentication.DefaultBasicAuthentication
+import org.gradle.kotlin.dsl.repositories
+import org.gradle.kotlin.dsl.version
 import java.net.URI
+
+buildscript {
+
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+
+    dependencies {
+        classpath("org.jetbrains.dokka:dokka-gradle-plugin:${Vers.dokka}")
+    }
+}
 
 repositories {
     mavenCentral()
@@ -8,12 +22,14 @@ repositories {
 }
 
 plugins {
-    kotlin("jvm") version "1.2.10"
+    kotlin("jvm") version "${Vers.kotlin}"
     `maven-publish`
+//    id("org.jetbrains.dokka") version "${Vers.dokka}"
+
 }
 
 dependencies {
-    compile(kotlin("stdlib", "1.2.10"))
+    compile(Libs.kotlin_stdlib)
     compile(gradleApi())
     compile("org.eclipse.jgit:org.eclipse.jgit:4.9.0.201710071750-r")
     compile("com.github.zafarkhaja:java-semver:0.9.0")
@@ -22,6 +38,11 @@ dependencies {
     compile("com.jcraft:jsch.agentproxy.usocket-jna:0.0.9")
     compile("com.jcraft:jsch.agentproxy.sshagent:0.0.9")
 }
+
+//
+//dokka {
+//
+//}
 
 val repositoryUser by project
 val repositoryPassword by project

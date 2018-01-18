@@ -39,10 +39,21 @@ publishing {
             }
 
             "${project.name}-mvnPublication"(MavenPublication::class) {
+
                 from(components["java"])
                 groupId = "ru.fix"
                 artifactId = "gradle-release-plugin"
                 artifact(sourcesJar)
+
+                pom.withXml {
+                    asNode().apply {
+                        appendNode("description", "Gradle release plugin.")
+                        appendNode("licenses").appendNode("license").apply {
+                            appendNode("name", "The Apache License, Version 2.0")
+                            appendNode("url", "http://www.apache.org/licenses/LICENSE-2.0.txt")
+                        }
+                    }
+                }
             }
         }
 

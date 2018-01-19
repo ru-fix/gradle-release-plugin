@@ -8,6 +8,10 @@ import java.io.File
 open class CreateReleaseTask : DefaultTask() {
 
 
+    /**
+     * Search for released versions based on existing tag names and creates
+     * new tag with incremented version
+     */
     @TaskAction
     fun createRelease() {
 

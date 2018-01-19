@@ -1,19 +1,38 @@
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.internal.authentication.DefaultBasicAuthentication
+import org.gradle.kotlin.dsl.repositories
+import org.gradle.kotlin.dsl.version
 import java.net.URI
 
+buildscript {
+
+    repositories {
+        jcenter()
+        gradlePluginPortal()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath("org.jetbrains.dokka:dokka-gradle-plugin:${Vers.dokkav}")
+    }
+}
+
 repositories {
-    mavenCentral()
     jcenter()
+    gradlePluginPortal()
+    mavenCentral()
 }
 
 plugins {
-    kotlin("jvm") version "1.2.10"
+    kotlin("jvm") version "${Vers.kotlin}"
     `maven-publish`
+
+    id("org.jetbrains.dokka") version "${Vers.dokkav}"
+
 }
 
 dependencies {
-    compile(kotlin("stdlib", "1.2.10"))
+    compile(Libs.kotlin_stdlib)
     compile(gradleApi())
     compile("org.eclipse.jgit:org.eclipse.jgit:4.9.0.201710071750-r")
     compile("com.github.zafarkhaja:java-semver:0.9.0")
@@ -38,12 +57,26 @@ publishing {
                 from("src/main/kotlin")
             }
 
+            val dokkaJavadoc by tasks.creating(org.jetbrains.dokka.gradle.DokkaTask::class) {
+                outputFormat = "javadoc"
+                outputDirectory = "$buildDir/dokka"
+            }
+
+            val javadocJar by tasks.creating(Jar::class) {
+                dependsOn(dokkaJavadoc)
+
+                classifier = "javadoc"
+                from(dokkaJavadoc.outputDirectory)
+            }
+
             "${project.name}-mvnPublication"(MavenPublication::class) {
 
                 from(components["java"])
                 groupId = "ru.fix"
                 artifactId = "gradle-release-plugin"
+
                 artifact(sourcesJar)
+                artifact(javadocJar)
 
                 pom.withXml {
                     asNode().apply {

@@ -57,25 +57,16 @@ publishing {
                 from("src/main/kotlin")
             }
 
-//            task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
-//                outputFormat = 'javadoc'
-//                outputDirectory = javadoc.destinationDir
-//                inputs.dir 'src/main/kotlin'
-//            }
-//
-//            task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
-//                classifier = 'javadoc'
-//                from javadoc.destinationDir
-//            }
-
             val dokkaJavadoc by tasks.creating(org.jetbrains.dokka.gradle.DokkaTask::class) {
                 outputFormat = "javadoc"
+                outputDirectory = "$buildDir/dokka"
             }
 
             val javadocJar by tasks.creating(Jar::class) {
+                dependsOn(dokkaJavadoc)
+
                 classifier = "javadoc"
                 from(dokkaJavadoc.outputDirectory)
-                dependsOn(dokkaJavadoc)
             }
 
             "${project.name}-mvnPublication"(MavenPublication::class) {

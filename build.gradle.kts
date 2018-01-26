@@ -80,10 +80,26 @@ publishing {
 
                 pom.withXml {
                     asNode().apply {
-                        appendNode("description", "Gradle release plugin.")
+                        appendNode("name", "${groupId}:${artifactId}")
+                        appendNode("description", "Plugin automatically creates branches and tags" +
+                                " and changes version in project gradle.properties file.")
+                        appendNode("url", "https://github.com/ru-fix/gradle-release-plugin")
                         appendNode("licenses").appendNode("license").apply {
                             appendNode("name", "The Apache License, Version 2.0")
                             appendNode("url", "http://www.apache.org/licenses/LICENSE-2.0.txt")
+                        }
+                        appendNode("developers").apply {
+                            appendNode("developer").apply {
+                                appendNode("name", "elukianov")
+                            }
+                            appendNode("developer").apply {
+                                appendNode("name", "kasfandiyarov")
+                            }
+                        }
+                        appendNode("scm").apply {
+                            appendNode("connection", "https://github.com/ru-fix/gradle-release-plugin.git")
+                            appendNode("url", "https://github.com/ru-fix/gradle-release-plugin")
+
                         }
                     }
                 }

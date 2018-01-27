@@ -97,21 +97,25 @@ name will be `1.3.8`
 first 10 symbols of git revision
 
 
-# Gradle release plugin project    
+# This project details    
 ## How to build
 To build and deploy gradle release plugin project to local maven repository run:
 ```
-gradle build publishToMavenLocal
+gradle build install
 ```
 
 ### Deploy to remote repository
-Provide credentials for repository:  
+Provide credentials for repository.  
+Provide signature.  
 ```
 ~/.gradle/gradle.properties
 
 repositoryUser = user
 repositoryPassword = password
 repositoryUrl = url-to-repository
+signing.keyId = key id 8 letters long (gpg --list-keys --keyid-format short)
+signing.password = passowrd to acces secring
+signing.secretKeyRingFile = /home/user/.gnupg/secring.gpg
 ```
 Specify version in
 gradle.properties

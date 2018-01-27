@@ -1,7 +1,9 @@
+import org.gradle.api.publication.maven.internal.action.MavenInstallAction
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.internal.authentication.DefaultBasicAuthentication
 import org.gradle.kotlin.dsl.repositories
 import org.gradle.kotlin.dsl.version
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URI
 
 buildscript {
@@ -25,11 +27,17 @@ repositories {
 
 plugins {
     kotlin("jvm") version "${Vers.kotlin}"
-    `maven-publish`
-
+    maven
     id("org.jetbrains.dokka") version "${Vers.dokkav}"
+    signing
 
 }
+
+
+val groupId = "ru.fix"
+val artifactId = "gradle-release-plugin"
+
+project.group = groupId
 
 dependencies {
     compile(Libs.kotlin_stdlib)
@@ -42,65 +50,107 @@ dependencies {
     compile("com.jcraft:jsch.agentproxy.sshagent:0.0.9")
 }
 
+signing {
+    sign(configurations.archives)
+}
+
+
 val repositoryUser by project
 val repositoryPassword by project
 val repositoryUrl by project
 
-publishing {
-    (publications) {
-        if (components.names.contains("java")) {
-            logger.info("Register java artifact for project: ${project.name}")
+val sourcesJar by tasks.creating(Jar::class) {
+    classifier = "sources"
+    from("src/main/java")
+    from("src/main/kotlin")
+}
 
-            val sourcesJar by tasks.creating(Jar::class) {
-                classifier = "sources"
-                from("src/main/java")
-                from("src/main/kotlin")
-            }
+val dokkaJavadoc by tasks.creating(org.jetbrains.dokka.gradle.DokkaTask::class) {
+    outputFormat = "javadoc"
+    outputDirectory = "$buildDir/dokka"
+}
 
-            val dokkaJavadoc by tasks.creating(org.jetbrains.dokka.gradle.DokkaTask::class) {
-                outputFormat = "javadoc"
-                outputDirectory = "$buildDir/dokka"
-            }
+val javadocJar by tasks.creating(Jar::class) {
+    dependsOn(dokkaJavadoc)
+    classifier = "javadoc"
+    from(dokkaJavadoc.outputDirectory)
+}
 
-            val javadocJar by tasks.creating(Jar::class) {
-                dependsOn(dokkaJavadoc)
+artifacts {
+    add("archives", sourcesJar)
+    add("archives", javadocJar)
+}
 
-                classifier = "javadoc"
-                from(dokkaJavadoc.outputDirectory)
-            }
 
-            "${project.name}-mvnPublication"(MavenPublication::class) {
+tasks {
 
-                from(components["java"])
-                groupId = "ru.fix"
-                artifactId = "gradle-release-plugin"
+    "uploadArchives"(Upload::class) {
+        dependsOn(javadocJar, sourcesJar)
 
-                artifact(sourcesJar)
-                artifact(javadocJar)
+        repositories {
+            withConvention(MavenRepositoryHandlerConvention::class) {
+                mavenDeployer {
 
-                pom.withXml {
-                    asNode().apply {
-                        appendNode("description", "Gradle release plugin.")
-                        appendNode("licenses").appendNode("license").apply {
-                            appendNode("name", "The Apache License, Version 2.0")
-                            appendNode("url", "http://www.apache.org/licenses/LICENSE-2.0.txt")
+                    withGroovyBuilder {
+                        //Sign pom.xml file
+                        "beforeDeployment" {
+                            signing.signPom(delegate as MavenDeployment)
+                        }
+
+                        "repository"(
+                                "url" to URI("$repositoryUrl")) {
+                            "authentication"(
+                                    "userName" to "$repositoryUser",
+                                    "password" to "$repositoryPassword"
+                            )
+                        }
+                    }
+
+                    pom.project {
+                        withGroovyBuilder {
+                            "artifactId"("$artifactId")
+                            "groupId"("$groupId")
+                            "version"("$version")
+
+                            "name"("${groupId}:${artifactId}")
+                            "description"("Plugin automatically creates branches and tags" +
+                                    " and changes version in project gradle.properties file.")
+
+                            "url"("https://github.com/ru-fix/gradle-release-plugin")
+
+                            "licenses" {
+                                "license" {
+                                    "name"("The Apache License, Version 2.0")
+                                    "url"("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                                }
+                            }
+
+
+                            "developers" {
+                                "developer"{
+                                    "id"("elukianov")
+                                    "name"("Evgeniy Lukianov")
+                                    "url"("https://github.com/elukianov")
+                                }
+                                "developer"{
+                                    "id"("swarmshine")
+                                    "name"("Kamil Asfandiyarov")
+                                    "url"("https://github.com/swarmshine")
+                                }
+                            }
+                            "scm" {
+                                "url"("https://github.com/ru-fix/gradle-release-plugin")
+                                "connection"("https://github.com/ru-fix/gradle-release-plugin.git")
+                                "developerConnection"("https://github.com/ru-fix/gradle-release-plugin.git")
+                            }
                         }
                     }
                 }
             }
         }
-
     }
 
-    repositories {
-        maven {
-            credentials {
-                username = "$repositoryUser"
-                password = "$repositoryPassword"
-            }
-            name = "remoteRepository"
-            url = URI("$repositoryUrl")
-        }
-
+    withType<KotlinCompile> {
+        kotlinOptions.jvmTarget = "1.8"
     }
 }

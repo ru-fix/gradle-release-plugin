@@ -90,7 +90,13 @@ tasks {
         repositories {
             withConvention(MavenRepositoryHandlerConvention::class) {
                 mavenDeployer {
+
                     withGroovyBuilder {
+                        //Sign pom.xml file
+                        "beforeDeployment" {
+                            signing.signPom(delegate as MavenDeployment)
+                        }
+
                         "repository"(
                                 "url" to URI("$repositoryUrl")) {
                             "authentication"(

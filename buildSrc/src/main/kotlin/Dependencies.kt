@@ -1,6 +1,6 @@
 object Vers {
-    val kotlin = "1.2.10"
-    val dokkav = "0.9.14"
+    val kotlin = "1.2.30"
+    val dokkav = "0.9.16"
 }
 
 object Libs {

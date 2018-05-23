@@ -5,6 +5,11 @@ import org.gradle.kotlin.dsl.repositories
 import org.gradle.kotlin.dsl.version
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URI
+import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KProperty
+
+val groupId = "ru.fix"
+val artifactId = "gradle-release-plugin"
 
 buildscript {
 
@@ -16,8 +21,31 @@ buildscript {
 
     dependencies {
         classpath("org.jetbrains.dokka:dokka-gradle-plugin:${Vers.dokkav}")
+        classpath(Libs.kotlin_stdlib)
+        classpath(Libs.kotlin_jre8)
+        classpath(Libs.kotlin_reflect)
     }
 }
+
+/**
+ * Project configuration by properties and environment
+ */
+fun envConfig() = object : ReadOnlyProperty<Any?, String?> {
+    override fun getValue(thisRef: Any?, property: KProperty<*>): String? =
+            if (ext.has(property.name)) {
+                ext[property.name] as? String
+            } else {
+                System.getenv(property.name)
+            }
+}
+
+val repositoryUser by envConfig()
+val repositoryPassword by envConfig()
+val repositoryUrl by envConfig()
+val signingKeyId by envConfig()
+val signingPassword by envConfig()
+val signingSecretKeyRingFile by envConfig()
+
 
 repositories {
     jcenter()
@@ -33,10 +61,6 @@ plugins {
 
 }
 
-
-val groupId = "ru.fix"
-val artifactId = "gradle-release-plugin"
-
 project.group = groupId
 
 dependencies {
@@ -51,13 +75,19 @@ dependencies {
 }
 
 signing {
+    if (!signingKeyId.isNullOrEmpty()) {
+        ext["signing.keyId"] = signingKeyId
+        ext["signing.password"] = signingPassword
+        ext["signing.secretKeyRingFile"] = signingSecretKeyRingFile
+        isRequired = true
+    } else {
+        logger.warn("${project.name}: Signing key not provided. Disable signing.")
+        isRequired = false
+    }
+
     sign(configurations.archives)
 }
 
-
-val repositoryUser by project
-val repositoryPassword by project
-val repositoryUrl by project
 
 val sourcesJar by tasks.creating(Jar::class) {
     classifier = "sources"
@@ -72,6 +102,8 @@ val dokkaJavadoc by tasks.creating(org.jetbrains.dokka.gradle.DokkaTask::class) 
 
 val javadocJar by tasks.creating(Jar::class) {
     dependsOn(dokkaJavadoc)
+    dependsOn(tasks.getByName("javadoc"))
+
     classifier = "javadoc"
     from(dokkaJavadoc.outputDirectory)
 }

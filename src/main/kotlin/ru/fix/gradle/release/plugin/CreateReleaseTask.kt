@@ -1,4 +1,4 @@
-package ru.fix.gradle.release.plugin.release
+package ru.fix.gradle.release.plugin
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
@@ -85,12 +85,18 @@ open class CreateReleaseTask : DefaultTask() {
             if (isCredentialsSupplied()) {
                 val gitLogin = project.property(GitUtils.GIT_LOGIN_PARAMETER).toString()
                 val gitPassword = project.property(GitUtils.GIT_PASSWORD_PARAMETER).toString()
-                logger.lifecycle("Pushing with login $gitLogin and password $gitPassword")
+                logger.lifecycle("Pushing with login $gitLogin")
                 pushTag(gitLogin, gitPassword, tagRef)
 
             } else {
-                logger.lifecycle("Git credentials weren't supplied, pushing via ssh")
-                pushTagViaSsh(tagRef)
+                logger.lifecycle("Git credentials weren't supplied, try to push via ssh")
+
+                try {
+                    pushTagViaSsh(tagRef)
+                } catch (exc: Exception) {
+                    logger.debug("Skip ssh push because of: ${exc.message}", exc)
+                    logger.lifecycle("Failed to push via ssh. You have to manually push changes to remote repository.")
+                }
             }
 
             logger.lifecycle("Completed successfully")

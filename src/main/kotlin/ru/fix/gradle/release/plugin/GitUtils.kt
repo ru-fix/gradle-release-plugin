@@ -1,4 +1,4 @@
-package ru.fix.gradle.release.plugin.release
+package ru.fix.gradle.release.plugin
 
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.JSchException
@@ -11,7 +11,7 @@ import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.transport.*
 import org.eclipse.jgit.util.FS
 import org.gradle.api.logging.Logging
-import ru.fix.gradle.release.plugin.release.GitHolder.git
+import ru.fix.gradle.release.plugin.GitHolder.git
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
@@ -136,9 +136,10 @@ class GitUtils {
             SshSessionFactory.setInstance(sessionFactory)
 
             GitHolder.git.push()
-                    .setTransportConfigCallback({
-                        val sshTransport = it as SshTransport
-                        sshTransport.sshSessionFactory = sessionFactory
+                    .setTransportConfigCallback({ transport ->
+                        if(transport is SshTransport) {
+                            transport.sshSessionFactory = sessionFactory
+                        }
                     })
                     .add(tagRef)
                     .call()

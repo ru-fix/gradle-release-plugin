@@ -1,4 +1,5 @@
 # Gradle Release Plugin
+[![Maven Central](https://img.shields.io/maven-central/v/ru.fix/gradle-release-plugin.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22ru.fix%22)
 
 gradle-release-plugin automate release procedure for gradle based projects. 
 It automatically creates release branches, update project version in root `gradle.properties` file 

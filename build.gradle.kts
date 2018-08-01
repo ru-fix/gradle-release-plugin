@@ -1,15 +1,16 @@
 import org.gradle.api.publication.maven.internal.action.MavenInstallAction
 import org.gradle.api.tasks.bundling.Jar
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.gradle.internal.authentication.DefaultBasicAuthentication
 import org.gradle.kotlin.dsl.repositories
 import org.gradle.kotlin.dsl.version
+import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URI
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
-val groupId = "ru.fix"
-val artifactId = "gradle-release-plugin"
 
 buildscript {
 
@@ -20,7 +21,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("org.jetbrains.dokka:dokka-gradle-plugin:${Vers.dokkav}")
+        classpath(Libs.dokkaGradlePlugin)
         classpath(Libs.kotlin_stdlib)
         classpath(Libs.kotlin_jre8)
         classpath(Libs.kotlin_reflect)
@@ -55,13 +56,16 @@ repositories {
 
 plugins {
     kotlin("jvm") version "${Vers.kotlin}"
-    maven
-    id("org.jetbrains.dokka") version "${Vers.dokkav}"
+    `maven-publish`
     signing
 
+    id("java")
+}
+apply{
+    plugin("org.jetbrains.dokka")
 }
 
-project.group = groupId
+group = "ru.fix"
 
 dependencies {
     compile(Libs.kotlin_stdlib)
@@ -74,115 +78,111 @@ dependencies {
     compile("com.jcraft:jsch.agentproxy.sshagent:0.0.9")
 }
 
-signing {
-    if (!signingKeyId.isNullOrEmpty()) {
-        ext["signing.keyId"] = signingKeyId
-        ext["signing.password"] = signingPassword
-        ext["signing.secretKeyRingFile"] = signingSecretKeyRingFile
-        isRequired = true
-    } else {
-        logger.warn("${project.name}: Signing key not provided. Disable signing.")
-        isRequired = false
-    }
-
-    sign(configurations.archives)
-}
-
-
 val sourcesJar by tasks.creating(Jar::class) {
     classifier = "sources"
     from("src/main/java")
     from("src/main/kotlin")
 }
 
-val dokkaJavadoc by tasks.creating(org.jetbrains.dokka.gradle.DokkaTask::class) {
+val dokkaTask by tasks.creating(DokkaTask::class){
     outputFormat = "javadoc"
     outputDirectory = "$buildDir/dokka"
 }
 
-val javadocJar by tasks.creating(Jar::class) {
-    dependsOn(dokkaJavadoc)
-    dependsOn(tasks.getByName("javadoc"))
-
+val dokkaJar by tasks.creating(Jar::class) {
     classifier = "javadoc"
-    from(dokkaJavadoc.outputDirectory)
-}
 
-artifacts {
-    add("archives", sourcesJar)
-    add("archives", javadocJar)
+    from(dokkaTask.outputDirectory)
+    dependsOn(dokkaTask)
 }
 
 
-tasks {
-
-    "uploadArchives"(Upload::class) {
-        dependsOn(javadocJar, sourcesJar)
-
-        repositories {
-            withConvention(MavenRepositoryHandlerConvention::class) {
-                mavenDeployer {
-
-                    withGroovyBuilder {
-                        //Sign pom.xml file
-                        "beforeDeployment" {
-                            signing.signPom(delegate as MavenDeployment)
-                        }
-
-                        "repository"(
-                                "url" to URI("$repositoryUrl")) {
-                            "authentication"(
-                                    "userName" to "$repositoryUser",
-                                    "password" to "$repositoryPassword"
-                            )
-                        }
-                    }
-
-                    pom.project {
-                        withGroovyBuilder {
-                            "artifactId"("$artifactId")
-                            "groupId"("$groupId")
-                            "version"("$version")
-
-                            "name"("${groupId}:${artifactId}")
-                            "description"("Plugin automatically creates branches and tags" +
-                                    " and changes version in project gradle.properties file.")
-
-                            "url"("https://github.com/ru-fix/gradle-release-plugin")
-
-                            "licenses" {
-                                "license" {
-                                    "name"("The Apache License, Version 2.0")
-                                    "url"("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                                }
-                            }
-
-
-                            "developers" {
-                                "developer"{
-                                    "id"("elukianov")
-                                    "name"("Evgeniy Lukianov")
-                                    "url"("https://github.com/elukianov")
-                                }
-                                "developer"{
-                                    "id"("swarmshine")
-                                    "name"("Kamil Asfandiyarov")
-                                    "url"("https://github.com/swarmshine")
-                                }
-                            }
-                            "scm" {
-                                "url"("https://github.com/ru-fix/gradle-release-plugin")
-                                "connection"("https://github.com/ru-fix/gradle-release-plugin.git")
-                                "developerConnection"("https://github.com/ru-fix/gradle-release-plugin.git")
-                            }
-                        }
-                    }
+publishing {
+    repositories {
+        maven {
+            url = uri("$repositoryUrl")
+            if (url.scheme.startsWith("http", true)) {
+                credentials {
+                    username = "$repositoryUser"
+                    password = "$repositoryPassword"
                 }
             }
         }
     }
+    (publications) {
+        "maven"(MavenPublication::class) {
+            from(components["java"])
+
+            artifact(sourcesJar)
+            artifact(dokkaJar)
+
+            pom {
+                name.set("${project.group}:${project.name}")
+                description.set("Plugin automatically creates branches and tags" +
+                        " and changes version in project gradle.properties file.")
+                url.set("https://github.com/ru-fix/gradle-release-plugin")
+                licenses {
+                    license {
+                        name.set("The Apache License, Version 2.0")
+                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("swarmshine")
+                        name.set("Evgeniy Lukianov")
+                        url.set("https://github.com/elukianov")
+                    }
+                    developer {
+                        id.set("swarmshine")
+                        name.set("Kamil Asfandiyarov")
+                        url.set("https://github.com/swarmshine")
+                    }
+                }
+                scm {
+                    url.set("https://github.com/ru-fix/gradle-release-plugin")
+                    connection.set("https://github.com/ru-fix/gradle-release-plugin.git")
+                    developerConnection.set("https://github.com/ru-fix/gradle-release-plugin.git")
+                }
+            }
+        }
+    }
+}
+
+signing {
+
+    if (!signingKeyId.isNullOrEmpty()) {
+        project.ext["signing.keyId"] = signingKeyId
+        project.ext["signing.password"] = signingPassword
+        project.ext["signing.secretKeyRingFile"] = signingSecretKeyRingFile
+
+        logger.info("Signing key id provided. Sign artifacts for $project.")
+
+        isRequired = true
+    } else {
+        logger.warn("${project.name}: Signing key not provided. Disable signing for  $project.")
+        isRequired = false
+    }
+
+    sign(publishing.publications)
+}
+
+tasks {
 
     withType<KotlinCompile> {
         kotlinOptions.jvmTarget = "1.8"
     }
+
+    withType<Test> {
+        useJUnitPlatform()
+
+        maxParallelForks = 10
+
+        testLogging {
+            events(TestLogEvent.PASSED, TestLogEvent.FAILED, TestLogEvent.SKIPPED)
+            showStandardStreams = true
+            exceptionFormat = TestExceptionFormat.FULL
+        }
+    }
+
 }

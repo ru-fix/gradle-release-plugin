@@ -57,7 +57,7 @@ open class CreateReleaseTask : DefaultTask() {
         }
 
 
-        val tempBranch = "final_${extension.releaseBranchPrefix}$version"
+        val tempBranch = "temp_release_${extension.releaseBranchPrefix}$version"
 
         with(GitUtils) {
 
@@ -87,6 +87,7 @@ open class CreateReleaseTask : DefaultTask() {
                 val gitPassword = project.property(GitUtils.GIT_PASSWORD_PARAMETER).toString()
                 logger.lifecycle("Pushing with login $gitLogin")
                 pushTag(gitLogin, gitPassword, tagRef)
+                logger.lifecycle("Tag pushed to remote repository.")
 
             } else {
                 logger.lifecycle("Git credentials weren't supplied, try to push via ssh")
@@ -95,11 +96,13 @@ open class CreateReleaseTask : DefaultTask() {
                     pushTagViaSsh(tagRef)
                 } catch (exc: Exception) {
                     logger.debug("Skip ssh push because of: ${exc.message}", exc)
-                    logger.lifecycle("Failed to push via ssh. You have to manually push changes to remote repository.")
+                    logger.lifecycle("Failed to push via ssh.\n" +
+                            "Release tag is created locally, but not propagated to remote repository.\n" +
+                            "You have to manually push changes to remote repository.\n" +
+                            "You can use 'git push --tags'")
+
                 }
             }
-
-            logger.lifecycle("Completed successfully")
         }
     }
 

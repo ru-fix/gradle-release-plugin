@@ -107,7 +107,7 @@ class GitUtils {
 
 
         fun commitFilesInIndex(commitMessage: String) {
-            logger.lifecycle("Commiting files")
+            logger.lifecycle("Committing files")
 
             GitHolder.git.add().addFilepattern(".")
                     .call()
@@ -151,7 +151,7 @@ class GitUtils {
 
                 override fun configure(host: OpenSshConfig.Host, session: Session) {
                     logger.lifecycle("Configure session")
-                    // This can be removed, but the overriden method is required since JschConfigSessionFactory is abstract
+                    // This can be removed, but the overridden method is required since JschConfigSessionFactory is abstract
                     session.setConfig("StrictHostKeyChecking", "false")
                 }
 

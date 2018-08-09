@@ -81,6 +81,12 @@ class GitUtils {
                     .call()
         }
 
+        fun fetchTags(){
+            logger.lifecycle("Fetching tags")
+            GitHolder.git.fetch()
+                    .setTagOpt(TagOpt.FETCH_TAGS)
+                    .call()
+        }
 
         fun createTag(name: String, comment: String): Ref {
 

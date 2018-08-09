@@ -35,7 +35,7 @@ class VersionUtils {
                     .filter { it.startsWith("$majorVersion.") }
 
             return if (minorVersions.isEmpty()) {
-                "$majorVersion.1"
+                "$majorVersion.0"
             } else {
                 var lastMinor = Version.valueOf(minorVersions[0])
                 lastMinor = lastMinor.incrementPatchVersion()

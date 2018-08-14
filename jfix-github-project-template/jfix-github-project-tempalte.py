@@ -1,4 +1,8 @@
 #!/usr/bin/python3
+# Script generates travis.yml configuration for github project for Travis
+# - encrypts gradle properties from ~/.gradle.properties
+# - encrypts ~/gnupg/secring.gpg key store
+# - generates `.travis.yml` template
 from argparse import ArgumentParser
 import subprocess
 import os

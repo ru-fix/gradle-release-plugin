@@ -15,6 +15,8 @@ open class CreateReleaseTask : DefaultTask() {
     @TaskAction
     fun createRelease() {
 
+        GitUtils.fetchTags()
+
         var extension = project.extensions.findByType(ReleaseExtension::class.java)
         extension = checkNotNull(extension)
 
@@ -38,7 +40,7 @@ open class CreateReleaseTask : DefaultTask() {
             }
         }
 
-        val branch = GitUtils.getCurrentBranch();
+        val branch = GitUtils.getCurrentBranch()
 
         checkValidBranch(extension.releaseBranchPrefix, branch)
         val baseVersion = VersionUtils.extractVersionFromBranch(branch);

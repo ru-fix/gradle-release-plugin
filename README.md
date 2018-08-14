@@ -180,6 +180,67 @@ name will be `1.3.8`
 - In file `gradle.properties` `version` property is replaced from `1.y-SNAPSHOT` to `1.3.8`
 - `gradle.properties` is being committed with new tag name `1.3.8`
 
+
+# Project template
+Common project configuration requires properties provided through `gradle.properties` or environment:
+```properties
+repositoryUrl= <https://path/to/remote/repository> or <file:///path/to/local/repository>
+repositoryUser= login for remote repository
+repositoryPassword= password for remote repository
+signingKeyId= gpg short keyid, could be obtained via gpg --list-keys --keyid-format short
+signingPassword= key store file password
+signingSecretKeyRingFile= /path/to/.gnupg/secring.gpg key store file
+  
+Use `gpg --export-secret-keys -o secring.gpg` to export secret key to old format supported by gradle
+```  
+# Travis and Maven Central
+
+To deploy project to maven central you have 
+ - create account on sonatype
+ - generate private key and sign artifacts before publication 
+ 
+Generating private key.  
+Export private key to old format: `secring.gpg`   
+`gpg --export-secret-keys -o secring.gpg`
+
+Encrypt `secring.gpg` and add it to your project repository `secring.gpg.enc`
+```
+travis encrypt-file secring.gpg 
+``` 
+Add decoding script into setup section of `.travis.yml`
+```
+jobs:
+  include:
+    - stage: build
+      ...
+      before_script: if [[ $encrypted_0cj38rd_key ]]; then openssl aes-256-cbc -K $encrypted_0cj38rd_key...
+
+```
+
+Encrypt project properties and add to secure section of `.travis.yml`
+```
+travis encrypt repositoryUrl=https://path/to/remote/repository
+travis encrypt signingPassword=30cDKf34rdsl
+...
+```
+```
+env:
+  global:
+  - signingSecretKeyRingFile="`pwd`/secring.gpg"
+  - secure: "MpiifWpBpsDfZ4OnQna/yRD4JaKXr9VvPXT4Ik0Njc/6y3BBGOsytXj4
+
+```
+
+## Generate .travis.yml
+Script 
+- encrypt gradle properties
+- encrypt secring.gpg key store
+- generate `.travis.yml` tempalte
+
+`jfix-github-project-template/jfix-github-project-tempalte.py`
+
+
+
 # Gradle Release Plugin project details    
 ## How to build
 To build and deploy gradle release plugin project to local maven repository run:

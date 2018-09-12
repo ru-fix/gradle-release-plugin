@@ -13,7 +13,7 @@ Create minor fix/feature in same release branch, e.g. tag 1.3.5 -> tag 1.3.6
 git checkout releases/release-1.3 
 gradle createRelease
 
-#optional manual push in case no ssh/https keys/credentials provided
+#optional, plugin by default tries to push changes by itself if ssh/https keys/credentials provided
 git push --tags
 ```
 Create new major version in a new branch, e.g. release-1.3 -> release-1.4

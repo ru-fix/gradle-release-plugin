@@ -45,7 +45,7 @@ print("encrypt properties")
 
 secure = []
 for item in secureItems:
-    secure.append("- secure: " + run(['travis', 'encrypt', f"repositoryUrl={properties[item]}"]).strip())
+    secure.append("" + run(['travis', 'encrypt', f"{item}={properties[item]}"]).strip())
 
 print("encrypt secring.gpg")
 

@@ -16,14 +16,13 @@ buildscript {
 
     repositories {
         jcenter()
-        gradlePluginPortal()
         mavenCentral()
     }
 
     dependencies {
         classpath(Libs.dokkaGradlePlugin)
         classpath(Libs.kotlin_stdlib)
-        classpath(Libs.kotlin_jre8)
+        classpath(Libs.kotlin_jdk8)
         classpath(Libs.kotlin_reflect)
     }
 }
@@ -61,7 +60,7 @@ plugins {
 
     id("java")
 }
-apply{
+apply {
     plugin("org.jetbrains.dokka")
 }
 
@@ -84,7 +83,7 @@ val sourcesJar by tasks.creating(Jar::class) {
     from("src/main/kotlin")
 }
 
-val dokkaTask by tasks.creating(DokkaTask::class){
+val dokkaTask by tasks.creating(DokkaTask::class) {
     outputFormat = "javadoc"
     outputDirectory = "$buildDir/dokka"
 }
@@ -109,12 +108,14 @@ publishing {
             }
         }
     }
-    (publications) {
-        "maven"(MavenPublication::class) {
+    publications {
+
+        register("maven", MavenPublication::class) {
             from(components["java"])
 
             artifact(sourcesJar)
             artifact(dokkaJar)
+
 
             pom {
                 name.set("${project.group}:${project.name}")

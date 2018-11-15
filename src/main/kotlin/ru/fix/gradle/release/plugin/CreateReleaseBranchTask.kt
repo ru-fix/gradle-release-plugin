@@ -9,15 +9,18 @@ open class CreateReleaseBranchTask : DefaultTask() {
     @TaskAction
     fun createReleaseBranch() {
 
-        var extension = project.extensions.findByType(ReleaseExtension::class.java)
-        extension = checkNotNull(extension)
+        val git = GitExtensionConfiguration(project).buildGitClient()
+        val versionManager = VersionManager(git)
+
+        val extension = project.extensions.findByType(ReleaseExtension::class.java)
+        checkNotNull(extension) { "Failed to find ReleaseExtension" }
 
 
-        if (GitUtils.getCurrentBranch() != extension.mainBranch) {
+        if (git.getCurrentBranch() != extension.mainBranch) {
             throw GradleException("Release branch can be built only from ${extension.mainBranch} branch")
         }
 
-        val supposedVersion = VersionUtils.supposeBranchVersion()
+        val supposedVersion = versionManager.supposeBranchVersion()
         project.logger.lifecycle("Please specify release version (Should be in x.y format) [$supposedVersion]")
 
 
@@ -26,35 +29,31 @@ open class CreateReleaseBranchTask : DefaultTask() {
             var input = readLine()
 
             if (input == null || input.isBlank()) {
-                //Подставляем текущую версию
-                input = supposedVersion;
+                input = supposedVersion
             }
 
-
-            if (VersionUtils.branchVersionExists(input)) {
+            if (versionManager.branchVersionExists(input)) {
                 project.logger.lifecycle("Version $input already exists")
                 continue
             }
 
-            if (!VersionUtils.isValidBranchVersion(input)) {
+            if (!versionManager.isValidBranchVersion(input)) {
                 project.logger.lifecycle("Please specify valid version")
                 continue
             }
 
             val branch = "${extension.releaseBranchPrefix}$input"
 
-            if (GitUtils.isBranchExists(branch)) {
+            if (git.isBranchExists(branch)) {
                 project.logger.lifecycle("Branch with name $branch already exists")
                 continue
             }
 
-            GitUtils.createBranch(branch, true)
+            git.createBranch(branch, true)
 
             project.logger.lifecycle("Branch $branch was successfully created")
             break
 
         }
     }
-
-
 }

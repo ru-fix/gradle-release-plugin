@@ -7,45 +7,26 @@ import java.io.File
 
 open class CreateReleaseTask : DefaultTask() {
 
-
     /**
      * Search for released versions based on existing tag names and creates
      * new tag with incremented version
      */
     @TaskAction
     fun createRelease() {
+        val git = GitExtensionConfiguration(project).buildGitClient()
+        val versionManager = VersionManager(git)
 
-        GitUtils.fetchTags()
+        git.fetchTags()
 
-        var extension = project.extensions.findByType(ReleaseExtension::class.java)
-        extension = checkNotNull(extension)
+        val extension = project.extensions.findByType(ReleaseExtension::class.java)
+        checkNotNull(extension) { "Failed to find ReleaseExtension" }
 
-        if (project.hasProperty("baseVersion")) {
-            val baseVersion = project.property("baseVersion").toString()
-
-            if (!VersionUtils.isValidBranchVersion(baseVersion)) {
-                throw GradleException("Invalid base version: $baseVersion. Should be in x.y format")
-            }
-
-
-            val targetBranch = "${extension.releaseBranchPrefix}$baseVersion"
-            if (GitUtils.getCurrentBranch() != targetBranch) {
-                project.logger.lifecycle("Switching to release branch $targetBranch")
-
-                val remote = project.hasProperty("remoteCheckout")
-                        && project.property("remoteCheckout")
-                        .toString().toBoolean()
-
-                GitUtils.checkoutBranch(targetBranch, remote)
-            }
-        }
-
-        val branch = GitUtils.getCurrentBranch()
+        val branch = git.getCurrentBranch()
 
         checkValidBranch(extension.releaseBranchPrefix, branch)
-        val baseVersion = VersionUtils.extractVersionFromBranch(branch);
+        val baseVersion = versionManager.extractVersionFromBranch(branch)
 
-        val version = VersionUtils.supposeReleaseVersion(baseVersion)
+        val version = versionManager.supposeReleaseVersion(baseVersion)
 
         project.logger.lifecycle("Creating release for version $version")
 
@@ -58,17 +39,16 @@ open class CreateReleaseTask : DefaultTask() {
             throw GradleException("There are no gradle.properties in project. Terminating")
         }
 
-
         val tempBranch = "temp_release_${extension.releaseBranchPrefix}$version"
 
-        with(GitUtils) {
+        with(git) {
 
             if (isBranchExists(tempBranch)) {
                 throw GradleException("Temporary branch $tempBranch already exists. Please delete it first")
             }
 
             createBranch(tempBranch, true)
-            fileList.forEach { VersionUtils.updateVersionInFile(it.absolutePath, version) }
+            fileList.forEach { versionManager.updateVersionInFile(it.absolutePath, version) }
 
             commitFilesInIndex("Updating version to $version")
             val tagRef = createTag(version, "Release $version")
@@ -78,33 +58,12 @@ open class CreateReleaseTask : DefaultTask() {
                     project.property("checkoutTag").toString().toBoolean()) {
                 checkoutTag(version)
             } else {
-                checkoutBranch(branch, false)
+                checkoutLocalBranch(branch)
             }
 
             deleteBranch(tempBranch)
 
-
-            if (isCredentialsSupplied()) {
-                val gitLogin = project.property(GitUtils.GIT_LOGIN_PARAMETER).toString()
-                val gitPassword = project.property(GitUtils.GIT_PASSWORD_PARAMETER).toString()
-                logger.lifecycle("Pushing with login $gitLogin")
-                pushTag(gitLogin, gitPassword, tagRef)
-                logger.lifecycle("Tag pushed to remote repository.")
-
-            } else {
-                logger.lifecycle("Git credentials weren't supplied, try to push via ssh")
-
-                try {
-                    pushTagViaSsh(tagRef)
-                } catch (exc: Exception) {
-                    logger.debug("Skip ssh push because of: ${exc.message}", exc)
-                    logger.lifecycle("Failed to push via ssh.\n" +
-                            "Release tag is created locally, but not propagated to remote repository.\n" +
-                            "You have to manually push changes to remote repository.\n" +
-                            "You can use 'git push --tags'")
-
-                }
-            }
+            pushTag(tagRef)
         }
     }
 
@@ -113,11 +72,6 @@ open class CreateReleaseTask : DefaultTask() {
         if (!Regex("$branchPrefix(\\d+)\\.(\\d+)").matches(currentBranch)) {
             throw GradleException("Invalid release branch")
         }
-    }
-
-    private fun isCredentialsSupplied(): Boolean {
-        return project.hasProperty(GitUtils.GIT_LOGIN_PARAMETER)
-                && project.hasProperty(GitUtils.GIT_PASSWORD_PARAMETER);
     }
 
 }

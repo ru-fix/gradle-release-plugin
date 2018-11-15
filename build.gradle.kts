@@ -68,6 +68,8 @@ group = "ru.fix"
 
 dependencies {
     compile(Libs.kotlin_stdlib)
+    compile(Libs.kotlin_reflect)
+
     compile(gradleApi())
     compile("org.eclipse.jgit:org.eclipse.jgit:4.9.0.201710071750-r")
     compile("com.github.zafarkhaja:java-semver:0.9.0")
@@ -75,6 +77,9 @@ dependencies {
     compile("com.jcraft:jsch.agentproxy.jsch:0.0.9")
     compile("com.jcraft:jsch.agentproxy.usocket-jna:0.0.9")
     compile("com.jcraft:jsch.agentproxy.sshagent:0.0.9")
+
+    testImplementation(Libs.junit_api)
+    testRuntimeOnly(Libs.junit_engine)
 }
 
 val sourcesJar by tasks.creating(Jar::class) {

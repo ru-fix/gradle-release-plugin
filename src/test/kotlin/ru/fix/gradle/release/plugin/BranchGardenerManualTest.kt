@@ -63,5 +63,6 @@ class BranchGardenerManualTest {
 
     @Test
     fun createReleaseBranch() {
+        BranchGardener(project).createReleaseBranch()
     }
 }

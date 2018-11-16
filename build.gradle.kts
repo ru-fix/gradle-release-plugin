@@ -71,12 +71,12 @@ dependencies {
     compile(Libs.kotlin_reflect)
 
     compile(gradleApi())
-    compile("org.eclipse.jgit:org.eclipse.jgit:4.9.0.201710071750-r")
-    compile("com.github.zafarkhaja:java-semver:0.9.0")
 
-    compile("com.jcraft:jsch.agentproxy.jsch:0.0.9")
-    compile("com.jcraft:jsch.agentproxy.usocket-jna:0.0.9")
-    compile("com.jcraft:jsch.agentproxy.sshagent:0.0.9")
+    compile(Libs.jgit)
+    compile(Libs.semver)
+    compile(Libs.jsch)
+    compile(Libs.jsch_proxy_jna)
+    compile(Libs.jsch_proxy_sshagent)
 
     testImplementation(Libs.junit_api)
     testRuntimeOnly(Libs.junit_engine)

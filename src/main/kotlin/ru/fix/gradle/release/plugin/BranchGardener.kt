@@ -81,7 +81,9 @@ class BranchGardener(private val project: Project) {
         val versionManager = VersionManager(git)
 
         if (git.isUncommittedChangesExist()) {
-            project.logger.lifecycle("Will not create release due to uncommitted changes")
+            project.logger.lifecycle("" +
+                    "Could not create new release branch due to uncommitted changes. " +
+                    "Please commit your current work before creating new release branch.")
             return
         }
 

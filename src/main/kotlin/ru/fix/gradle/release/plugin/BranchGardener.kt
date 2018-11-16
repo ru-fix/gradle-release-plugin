@@ -23,6 +23,28 @@ class BranchGardener(private val project: Project) {
         val extension = project.extensions.findByType(ReleaseExtension::class.java)
         checkNotNull(extension) { "Failed to find ReleaseExtension" }
 
+
+        // by default current branch is used as release branch
+        // but user can specify explicitly which branch
+        if (project.hasProperty(ProjectProperties.RELEASE_BRANCH_VERSION)) {
+            val releaseBranchVersion = project.property(ProjectProperties.RELEASE_BRANCH_VERSION).toString()
+
+            if (!versionManager.isValidBranchVersion(releaseBranchVersion)) {
+                throw GradleException("Invalid release branch version: $releaseBranchVersion. Should be in x.y format")
+            }
+
+            val targetBranch = "${extension.releaseBranchPrefix}$releaseBranchVersion"
+            if (git.getCurrentBranch() != targetBranch) {
+                project.logger.lifecycle("Switching to release branch $targetBranch")
+
+                if (git.isLocalBranchExists(targetBranch)) {
+                    git.checkoutLocalBranch(targetBranch)
+                } else {
+                    git.checkoutRemoteBranch(targetBranch)
+                }
+            }
+        }
+
         val branch = git.getCurrentBranch()
 
         checkValidBranch(extension.releaseBranchPrefix, branch)
@@ -45,7 +67,7 @@ class BranchGardener(private val project: Project) {
 
         with(git) {
 
-            if (isBranchExists(tempBranch)) {
+            if (isLocalBranchExists(tempBranch)) {
                 throw GradleException("Temporary branch $tempBranch already exists. Please delete it first")
             }
 
@@ -119,7 +141,7 @@ class BranchGardener(private val project: Project) {
 
             val branch = "${extension.releaseBranchPrefix}$input"
 
-            if (git.isBranchExists(branch)) {
+            if (git.isLocalBranchExists(branch)) {
                 project.logger.lifecycle("Branch with name $branch already exists")
                 continue
             }

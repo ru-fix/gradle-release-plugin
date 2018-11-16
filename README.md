@@ -67,9 +67,10 @@ Configuration:
  * releaseBranchPrefix: String - prefix for release branch, by default - `/releases/release-`
  
 Properties:
- * ru.fix.gradle.release.git.login: String - login for remote git repository
- * ru.fix.gradle.release.git.password: String - password for remote git repository
- * ru.fix.gradle.release.git.checkoutTag: Boolean - whether to left repository with checkouted tag or with checkouted release branch 
+ * ru.fix.gradle.release.login: String - login for remote git repository
+ * ru.fix.gradle.release.password: String - password for remote git repository
+ * ru.fix.gradle.release.checkoutTag: Boolean - whether to left repository with checkouted tag or with checkouted release branch
+ * ru.fix.gradle.release.releaseBranchVersion: String - which branch to select for release in x.y format. By default current branch will be used.  
 
 ```
 #before

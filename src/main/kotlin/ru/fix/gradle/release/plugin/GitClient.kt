@@ -5,6 +5,7 @@ import com.jcraft.jsch.Session
 import com.jcraft.jsch.agentproxy.RemoteIdentityRepository
 import com.jcraft.jsch.agentproxy.connector.SSHAgentConnector
 import com.jcraft.jsch.agentproxy.usocket.JNAUSocketFactory
+import org.eclipse.jgit.api.CreateBranchCommand
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.TransportCommand
 import org.eclipse.jgit.lib.Ref
@@ -15,7 +16,6 @@ import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logging
 import java.io.File
 import java.io.FileInputStream
-import kotlin.math.log
 
 
 class GitCredentials(val login: String, val password: String)
@@ -140,6 +140,17 @@ class GitClient(
                 .setName(branch).call()
     }
 
+    fun checkoutRemoteBranch(branch: String) {
+        logger.lifecycle("Checkout remote branch $branch")
+        git.checkout()
+                .setCreateBranch(true)
+                .setName(branch)
+                .setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.SET_UPSTREAM)
+                .setStartPoint("origin/$branch")
+                .call()
+
+    }
+
 
     fun pushTag(tagRef: Ref) {
 
@@ -217,7 +228,7 @@ class GitClient(
         }
     }
 
-    fun isBranchExists(branch: String): Boolean {
+    fun isLocalBranchExists(branch: String): Boolean {
         return git.branchList().call()
                 .stream().filter { "refs/heads/$branch" == it.name }
                 .findAny().isPresent

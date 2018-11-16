@@ -32,7 +32,7 @@ class GitClientTest {
     @Test
     fun `current branch exist`() {
         GitClient().run {
-            assertTrue(isBranchExists(getCurrentBranch()))
+            assertTrue(isLocalBranchExists(getCurrentBranch()))
         }
     }
 

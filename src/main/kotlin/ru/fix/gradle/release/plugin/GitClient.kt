@@ -12,6 +12,7 @@ import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import org.eclipse.jgit.transport.*
 import org.eclipse.jgit.util.FS
+import org.gradle.api.GradleException
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logging
 import java.io.File
@@ -113,10 +114,18 @@ class GitClient(
     fun fetchTags() {
         logger.lifecycle("Fetching tags")
 
-        git.fetch().apply {
-            setTagOpt(TagOpt.FETCH_TAGS)
-            setupTransport(this)
-            call()
+        try {
+            git.fetch().apply {
+                setTagOpt(TagOpt.FETCH_TAGS)
+                setupTransport(this)
+                call()
+            }
+
+        } catch (exc: Exception) {
+            throw GradleException(
+                    "Failed to fetch tags from remote repository.".let {
+                        if (credentials == null) "$it\n Be aware that there was no credentials provided." else it
+                    }, exc)
         }
 
         logger.lifecycle("Tags fetched")
@@ -163,8 +172,6 @@ class GitClient(
                     .add(tagRef)
                     .call()
         } catch (exc: Exception) {
-
-
             logger.lifecycle("Failed to push tag $tagRef to remote repository.\n" +
                     "Release tag is created locally, but not propagated to remote repository.\n" +
                     "You have to manually push changes to remote repository.\n" +

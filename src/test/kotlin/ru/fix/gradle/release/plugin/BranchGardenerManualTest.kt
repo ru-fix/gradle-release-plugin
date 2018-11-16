@@ -32,12 +32,16 @@ class BranchGardenerManualTest {
         val msg = slot<String>()
         every { logger.lifecycle(capture(msg)) } answers { println(msg.captured) }
 
+        val warn = slot<String>()
+        every { logger.warn(capture(warn)) } answers { println(warn.captured) }
+
         val debugMsg = slot<String>()
         val debugExc = slot<Throwable>()
         every { logger.log(LogLevel.DEBUG, capture(debugMsg), capture(debugExc)) } answers {
             println(debugMsg.captured)
             println(debugExc.captured)
         }
+
 
         every { project.logger } returns logger
 

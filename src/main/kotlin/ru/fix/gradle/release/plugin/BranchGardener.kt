@@ -115,8 +115,9 @@ class BranchGardener(private val project: Project) {
 
 
         if (git.getCurrentBranch() != extension.mainBranch) {
-            throw GradleException("You are not in the main branch: ${extension.mainBranch}.\n" +
+            project.logger.warn("You are not in the main branch: ${extension.mainBranch}.\n" +
                     "Release branch can be built only from ${extension.mainBranch} branch.")
+            return
         }
 
         val supposedVersion = versionManager.supposeBranchVersion()

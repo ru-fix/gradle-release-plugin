@@ -103,7 +103,7 @@ class GitClient(
                 transport.sshSessionFactory = sessionFactory
 
             } else {
-                logger.lifecycle("Using ${transport.javaClass.simpleName} transport")
+                logger.lifecycle("Using transport: ${transport.javaClass.simpleName}")
             }
         }
     }

@@ -3,11 +3,10 @@ package ru.fix.gradle.release.plugin
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
 import io.mockk.slot
 import org.gradle.api.Project
 import org.gradle.api.logging.Logger
-import org.junit.jupiter.api.BeforeAll
+import org.gradle.api.plugins.ExtensionContainer
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -21,6 +20,9 @@ class BranchGardenerTest {
     @MockK
     lateinit var logger: Logger
 
+    @MockK
+    lateinit var extensionContainer: ExtensionContainer
+
     @BeforeEach
     fun init() {
         val msg = slot<String>()
@@ -33,6 +35,8 @@ class BranchGardenerTest {
         every { project.property(GIT_PASSWORD_PARAMETER) } returns null
         every { project.hasProperty(GIT_PASSWORD_PARAMETER) } returns false
 
+        every { project.extensions } returns extensionContainer
+        every { extensionContainer.findByType(ReleaseExtension::class.java) } returns ReleaseExtension()
     }
 
     @Test

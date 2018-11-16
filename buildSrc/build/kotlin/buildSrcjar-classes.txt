@@ -1,0 +1,1 @@
+/projects/gradle-release-plugin/buildSrc/build/classes/kotlin/main/Libs.class:/projects/gradle-release-plugin/buildSrc/build/classes/kotlin/main/Vers.class

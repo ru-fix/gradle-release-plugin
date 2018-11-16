@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import java.lang.Exception
 
 @Disabled("Test creates release in current repository, only for manual launching")
 @ExtendWith(MockKExtension::class)
@@ -31,7 +32,11 @@ class BranchGardenerManualTest {
         every { logger.lifecycle(capture(msg)) } answers { println(msg.captured) }
 
         val debugMsg = slot<String>()
-        every { logger.debug(capture(debugMsg)) } answers { println(debugMsg.captured) }
+        val debugExc = slot<Exception>()
+        every { logger.debug(capture(debugMsg), capture(debugExc)) } answers {
+            println(debugMsg.captured)
+            println(debugExc.captured)
+        }
 
         every { project.logger } returns logger
 

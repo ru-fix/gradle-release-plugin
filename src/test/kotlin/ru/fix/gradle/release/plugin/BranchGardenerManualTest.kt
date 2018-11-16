@@ -8,11 +8,13 @@ import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 import org.gradle.api.plugins.ExtensionContainer
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
+@Disabled("Test creates release in current repository, only for manual launching")
 @ExtendWith(MockKExtension::class)
-class BranchGardenerTest {
+class BranchGardenerManualTest {
 
     @MockK
     lateinit var project: Project

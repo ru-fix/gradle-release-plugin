@@ -2,6 +2,7 @@ package ru.fix.gradle.release.plugin
 
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test
  * - git repository cloned by https
  * - with or without credentials
  */
+@Disabled("It is required that user manually provides test data to run this test case.")
 class GitClientTest {
 
     @Test
@@ -37,7 +39,7 @@ class GitClientTest {
     }
 
     @Test
-    fun `check for uncommitted`(){
+    fun `check for uncommitted`() {
         println(GitClient().isUncommittedChangesExist())
     }
 }

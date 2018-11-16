@@ -43,6 +43,8 @@ class BranchGardenerTest {
     @Test
     fun createRelease() {
 
+        every { project.hasProperty(ProjectProperties.CHECKOUT_TAG) } returns true
+        every { project.property(ProjectProperties.CHECKOUT_TAG) } returns true
 
         BranchGardener(project).createRelease()
 

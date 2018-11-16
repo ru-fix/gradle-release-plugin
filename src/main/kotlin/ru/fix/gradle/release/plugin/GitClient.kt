@@ -14,6 +14,7 @@ import org.eclipse.jgit.util.FS
 import org.gradle.api.logging.Logging
 import java.io.File
 import java.io.FileInputStream
+import kotlin.math.log
 
 
 class GitCredentials(val login: String, val password: String)
@@ -214,6 +215,16 @@ class GitClient(
         return git.branchList().call()
                 .stream().filter { "refs/heads/$branch" == it.name }
                 .findAny().isPresent
+    }
+
+    fun isUncommittedChangesExist(): Boolean {
+        val conflicting = git.status().call().uncommittedChanges
+        if (conflicting.isEmpty()) {
+            return false
+        } else {
+            logger.lifecycle("Found uncommited chages: $conflicting")
+            return true
+        }
     }
 
     override fun close() {

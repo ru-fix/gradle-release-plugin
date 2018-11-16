@@ -13,6 +13,8 @@ object Libs {
 
     val junit_api = "org.junit.jupiter:junit-jupiter-api:${Vers.junit}"
     val junit_engine = "org.junit.jupiter:junit-jupiter-engine:${Vers.junit}"
+
+    val mockk = "io.mockk:mockk:1.8.13"
 }
 
 

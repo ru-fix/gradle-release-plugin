@@ -35,4 +35,9 @@ class GitClientTest {
             assertTrue(isBranchExists(getCurrentBranch()))
         }
     }
+
+    @Test
+    fun `check for uncommitted`(){
+        println(GitClient().isUncommittedChangesExist())
+    }
 }

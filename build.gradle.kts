@@ -80,6 +80,8 @@ dependencies {
 
     testImplementation(Libs.junit_api)
     testRuntimeOnly(Libs.junit_engine)
+
+    testCompile(Libs.mockk)
 }
 
 val sourcesJar by tasks.creating(Jar::class) {

@@ -3,8 +3,8 @@ package ru.fix.gradle.release.plugin
 import org.gradle.api.Project
 
 
-private const val GIT_LOGIN_PARAMETER = "git.login"
-private const val GIT_PASSWORD_PARAMETER = "git.password"
+const val GIT_LOGIN_PARAMETER = "git.login"
+const val GIT_PASSWORD_PARAMETER = "git.password"
 
 
 class GitExtensionConfiguration(private val project: Project) {

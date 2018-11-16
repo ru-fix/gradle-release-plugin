@@ -30,10 +30,9 @@ class BranchGardenerTest {
 
         every { project.logger } returns logger
 
-        every { project.property(GIT_LOGIN_PARAMETER) } returns null
-        every { project.hasProperty(GIT_LOGIN_PARAMETER) } returns false
-        every { project.property(GIT_PASSWORD_PARAMETER) } returns null
-        every { project.hasProperty(GIT_PASSWORD_PARAMETER) } returns false
+
+        every { project.hasProperty(ProjectProperties.GIT_LOGIN) } returns false
+        every { project.hasProperty(ProjectProperties.GIT_PASSWORD) } returns false
 
         every { project.extensions } returns extensionContainer
         every { extensionContainer.findByType(ReleaseExtension::class.java) } returns ReleaseExtension()

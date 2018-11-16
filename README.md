@@ -65,6 +65,11 @@ No credentials required in case of ssh key.
 Configuration:
  * mainBranch: String - base branch name, by default - `/master`
  * releaseBranchPrefix: String - prefix for release branch, by default - `/releases/release-`
+ 
+Properties:
+ * ru.fix.gradle.release.git.login: String - login for remote git repository
+ * ru.fix.gradle.release.git.password: String - password for remote git repository
+ * ru.fix.gradle.release.git.checkoutTag: Boolean - whether to left repository with checkouted tag or with checkouted release branch 
 
 ```
 #before

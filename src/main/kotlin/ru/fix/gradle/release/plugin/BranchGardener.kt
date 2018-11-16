@@ -56,8 +56,8 @@ class BranchGardener(private val project: Project) {
             val tagRef = createTag(version, "Release $version")
 
 
-            if (project.hasProperty("checkoutTag") &&
-                    project.property("checkoutTag").toString().toBoolean()) {
+            if (project.hasProperty(ProjectProperties.CHECKOUT_TAG) &&
+                    project.property(ProjectProperties.CHECKOUT_TAG).toString().toBoolean()) {
                 checkoutTag(version)
             } else {
                 checkoutLocalBranch(branch)
@@ -70,7 +70,7 @@ class BranchGardener(private val project: Project) {
     }
 
     private fun checkValidBranch(branchPrefix: String, currentBranch: String) {
-        project.logger.lifecycle("Checking branch $currentBranch for validity")
+        project.logger.lifecycle("Checking branch $currentBranch matches release branch naming pattern")
         if (!Regex("$branchPrefix(\\d+)\\.(\\d+)").matches(currentBranch)) {
             throw GradleException("Invalid release branch")
         }

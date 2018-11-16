@@ -11,6 +11,7 @@ import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import org.eclipse.jgit.transport.*
 import org.eclipse.jgit.util.FS
+import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logging
 import java.io.File
 import java.io.FileInputStream
@@ -159,7 +160,7 @@ class GitClient(
                     "You can use 'git push --tags'\n" +
                     "Push failed due to: ${exc.message}\n" +
                     "You can run gradle with --debug logging level to see details.")
-            logger.debug(exc.message, exc)
+            logger.log(LogLevel.DEBUG, exc.message, exc)
         }
     }
 

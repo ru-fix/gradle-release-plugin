@@ -5,6 +5,7 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.slot
 import org.gradle.api.Project
+import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logger
 import org.gradle.api.plugins.ExtensionContainer
 import org.junit.jupiter.api.BeforeEach
@@ -33,7 +34,7 @@ class BranchGardenerManualTest {
 
         val debugMsg = slot<String>()
         val debugExc = slot<Throwable>()
-        every { logger.debug(capture(debugMsg), capture(debugExc)) } answers {
+        every { logger.log(LogLevel.DEBUG, capture(debugMsg), capture(debugExc)) } answers {
             println(debugMsg.captured)
             println(debugExc.captured)
         }

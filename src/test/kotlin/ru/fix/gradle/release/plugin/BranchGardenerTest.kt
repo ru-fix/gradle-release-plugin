@@ -27,7 +27,9 @@ class BranchGardenerTest {
     fun init() {
         val msg = slot<String>()
         every { logger.lifecycle(capture(msg)) } answers { println(msg.captured) }
-        every { logger.debug(capture(msg)) } answers { println(msg.captured) }
+
+        val debugMsg = slot<String>()
+        every { logger.debug(capture(debugMsg)) } answers { println(debugMsg.captured) }
 
         every { project.logger } returns logger
 
@@ -45,7 +47,7 @@ class BranchGardenerTest {
     fun createRelease() {
 
         every { project.hasProperty(ProjectProperties.CHECKOUT_TAG) } returns true
-        every { project.property(ProjectProperties.CHECKOUT_TAG) } returns true
+        every { project.property(ProjectProperties.CHECKOUT_TAG) } returns false
 
         BranchGardener(project).createRelease()
 

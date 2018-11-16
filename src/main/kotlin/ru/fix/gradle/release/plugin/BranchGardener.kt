@@ -28,6 +28,7 @@ class BranchGardener(private val project: Project) {
         // but user can specify explicitly which branch
         if (project.hasProperty(ProjectProperties.RELEASE_BRANCH_VERSION)) {
             val releaseBranchVersion = project.property(ProjectProperties.RELEASE_BRANCH_VERSION).toString()
+            project.logger.lifecycle("Using user defined branch version: $releaseBranchVersion")
 
             if (!versionManager.isValidBranchVersion(releaseBranchVersion)) {
                 throw GradleException("Invalid release branch version: $releaseBranchVersion. Should be in x.y format")

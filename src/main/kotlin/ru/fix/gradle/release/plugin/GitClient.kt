@@ -151,10 +151,15 @@ class GitClient(
                     .add(tagRef)
                     .call()
         } catch (exc: Exception) {
+
+
             logger.lifecycle("Failed to push tag $tagRef to remote repository.\n" +
                     "Release tag is created locally, but not propagated to remote repository.\n" +
                     "You have to manually push changes to remote repository.\n" +
-                    "You can use 'git push --tags'", exc)
+                    "You can use 'git push --tags'\n" +
+                    "Push failed due to: ${exc.message}\n" +
+                    "You can run gradle with --debug logging level to see details.")
+            logger.debug(exc.message, exc)
         }
     }
 

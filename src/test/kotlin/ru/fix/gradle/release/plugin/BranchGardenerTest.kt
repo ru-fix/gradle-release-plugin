@@ -27,6 +27,7 @@ class BranchGardenerTest {
     fun init() {
         val msg = slot<String>()
         every { logger.lifecycle(capture(msg)) } answers { println(msg.captured) }
+        every { logger.debug(capture(msg)) } answers { println(msg.captured) }
 
         every { project.logger } returns logger
 

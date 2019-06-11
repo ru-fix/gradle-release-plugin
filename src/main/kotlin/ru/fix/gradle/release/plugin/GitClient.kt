@@ -32,10 +32,9 @@ class GitClient(
     private val git = Git(FileRepositoryBuilder()
             .readEnvironment()
             .findGitDir()
-            .also {
-                logger.lifecycle("Git repository: ${it.gitDir.absoluteFile}")
-            }
+            .setMustExist(true)
             .build())
+            .also { logger.lifecycle("Git repository: ${it.repository?.directory}") }
 
 
     private fun createJschSessionFactory(): JschConfigSessionFactory {

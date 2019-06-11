@@ -17,7 +17,7 @@ object Libs {
     val mockk = "io.mockk:mockk:1.8.13"
 
 
-    val jgit = "org.eclipse.jgit:org.eclipse.jgit:4.9.0.201710071750-r"
+    val jgit = "org.eclipse.jgit:org.eclipse.jgit:5.3.1.201904271842-r"
     val semver = "com.github.zafarkhaja:java-semver:0.9.0"
     val jsch = "com.jcraft:jsch.agentproxy.jsch:0.0.9"
     val jsch_proxy_jna = "com.jcraft:jsch.agentproxy.usocket-jna:0.0.9"

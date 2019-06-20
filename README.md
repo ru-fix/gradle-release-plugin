@@ -5,6 +5,23 @@ gradle-release-plugin automates release procedure for gradle based projects.
 It automatically creates release branches, update project version in root `gradle.properties` file 
 and commit this update in dynamically created tag with autoincremented version.
 
+- [Gradle Release Plugin](#gradle-release-plugin)
+- [Usages](#usages)
+  * [Short hints](#short-hints)
+  * [Plugin tasks](#plugin-tasks)
+    + [createReleaseBranch](#createreleasebranch)
+    + [createRelease](#createrelease)
+  * [How to use plugin](#how-to-use-plugin)
+  * [Gradle Release Flow](#gradle-release-flow)
+    + [Principles](#principles)
+    + [Release procedure](#release-procedure)
+- [New Project template](#new-project-template)
+  * [Travis and Maven Central](#travis-and-maven-central)
+  * [Generate .travis.yml](#generate-travisyml)
+- [Gradle Release Plugin project details](#gradle-release-plugin-project-details)
+  * [How to build this project](#how-to-build-this-project)
+    + [Deploy this project to remote repository](#deploy-this-project-to-remote-repository)
+ 
 # Usages
 
 ## Short hints
@@ -53,7 +70,7 @@ gradle createReleaseBranch
   └─my-new-future
 ``` 
  
-## createRelease 
+### createRelease 
 Searches for existing tags in repository that name matches version template `x.y.z`.    
 Finds latest one.    
 Calculates new version by incrementing latest one.    
@@ -98,7 +115,7 @@ tag 1.1.2
 tag 1.1.3 (* new tag with updated version in gradle.properties file)
 ``` 
 
-### How to use plugin
+## How to use plugin
 
 Add plugin to project gradle build script  
 * Kotiln DSL
@@ -244,7 +261,7 @@ name will be `1.3.8`
 - `gradle.properties` is being committed with new tag name `1.3.8`
 
 
-# Project template
+# New Project template
 Common project configuration requires properties provided through `gradle.properties` or environment:
 ```properties
 repositoryUrl= <https://path/to/remote/repository> or <file:///path/to/local/repository>
@@ -256,7 +273,7 @@ signingSecretKeyRingFile= /path/to/.gnupg/secring.gpg key store file
   
 Use `gpg --export-secret-keys -o secring.gpg` to export secret key to old format supported by gradle
 ```  
-# Travis and Maven Central
+## Travis and Maven Central
 
 To deploy project to maven central you have 
  - create account on sonatype

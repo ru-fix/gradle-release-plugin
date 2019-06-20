@@ -328,7 +328,7 @@ To build and deploy gradle release plugin project to local maven repository run:
 gradle build install
 ```
 
-### Deploy this project to remote repository
+## Deploy this project to remote repository
 Provide credentials for repository.  
 Provide signature.  
 ```

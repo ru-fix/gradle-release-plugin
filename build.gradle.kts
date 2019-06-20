@@ -16,14 +16,13 @@ buildscript {
 
     repositories {
         jcenter()
-        gradlePluginPortal()
         mavenCentral()
     }
 
     dependencies {
         classpath(Libs.dokkaGradlePlugin)
         classpath(Libs.kotlin_stdlib)
-        classpath(Libs.kotlin_jre8)
+        classpath(Libs.kotlin_jdk8)
         classpath(Libs.kotlin_reflect)
     }
 }
@@ -61,7 +60,7 @@ plugins {
 
     id("java")
 }
-apply{
+apply {
     plugin("org.jetbrains.dokka")
 }
 
@@ -69,13 +68,20 @@ group = "ru.fix"
 
 dependencies {
     compile(Libs.kotlin_stdlib)
-    compile(gradleApi())
-    compile("org.eclipse.jgit:org.eclipse.jgit:4.9.0.201710071750-r")
-    compile("com.github.zafarkhaja:java-semver:0.9.0")
+    compile(Libs.kotlin_reflect)
 
-    compile("com.jcraft:jsch.agentproxy.jsch:0.0.9")
-    compile("com.jcraft:jsch.agentproxy.usocket-jna:0.0.9")
-    compile("com.jcraft:jsch.agentproxy.sshagent:0.0.9")
+    compile(gradleApi())
+
+    compile(Libs.jgit)
+    compile(Libs.semver)
+    compile(Libs.jsch)
+    compile(Libs.jsch_proxy_jna)
+    compile(Libs.jsch_proxy_sshagent)
+
+    testImplementation(Libs.junit_api)
+    testRuntimeOnly(Libs.junit_engine)
+
+    testCompile(Libs.mockk)
 }
 
 val sourcesJar by tasks.creating(Jar::class) {
@@ -84,7 +90,7 @@ val sourcesJar by tasks.creating(Jar::class) {
     from("src/main/kotlin")
 }
 
-val dokkaTask by tasks.creating(DokkaTask::class){
+val dokkaTask by tasks.creating(DokkaTask::class) {
     outputFormat = "javadoc"
     outputDirectory = "$buildDir/dokka"
 }
@@ -109,12 +115,14 @@ publishing {
             }
         }
     }
-    (publications) {
-        "maven"(MavenPublication::class) {
+    publications {
+
+        register("maven", MavenPublication::class) {
             from(components["java"])
 
             artifact(sourcesJar)
             artifact(dokkaJar)
+
 
             pom {
                 name.set("${project.group}:${project.name}")

@@ -23,7 +23,7 @@ import java.nio.file.Paths
  * - with or without credentials
  */
 @Disabled("It is required that user manually provides test data to run this test case.")
-class GitClientTest {
+class GitClientManualTest {
 
     fun withClient(block: (GitClient) -> Unit) = GitClient().use { git ->
         git.find(Paths.get("").toAbsolutePath().toFile())

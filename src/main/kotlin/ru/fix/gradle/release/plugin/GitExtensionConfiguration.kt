@@ -1,10 +1,14 @@
 package ru.fix.gradle.release.plugin
 
+import org.eclipse.jgit.api.Git
 import org.gradle.api.Project
+import org.gradle.api.logging.Logging
 
 
 class GitExtensionConfiguration(private val project: Project) {
-    fun buildGitClient(): GitClient {
+    private val logger = Logging.getLogger(GitExtensionConfiguration::class.simpleName)
+
+    fun openGitRepository(): GitClient {
 
         val git: GitClient
 
@@ -19,9 +23,16 @@ class GitExtensionConfiguration(private val project: Project) {
             git = GitClient()
         }
 
-        git.find(project.projectDir)
+        if (git.find(project.projectDir)) {
+            logger.lifecycle("Found git repository at: ${git.directory}")
+            return git
+        } else {
+            "Failed to find git repository within: ${project.projectDir}".let {
+                logger.error(it)
+                throw Exception(it)
+            }
 
-        return git
+        }
     }
 
     private fun isCredentialsSupplied(): Boolean {

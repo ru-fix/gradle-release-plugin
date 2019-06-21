@@ -24,6 +24,8 @@ class GitCredentials(val login: String, val password: String)
 class GitClient(
         private val credentials: GitCredentials? = null) : AutoCloseable {
 
+    val directory: String?
+        get() = git.repository?.directory?.absolutePath
 
     private val logger = Logging.getLogger(Git::class.simpleName)
 
@@ -47,13 +49,6 @@ class GitClient(
                 } else {
                     false
                 }
-
-        if (exist) {
-            logger.lifecycle("Found git repository at: ${git.repository?.directory}")
-        } else {
-            logger.lifecycle("Failed to find git repository.")
-        }
-
         return exist
     }
 

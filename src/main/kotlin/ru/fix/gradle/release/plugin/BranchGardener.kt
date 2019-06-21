@@ -2,13 +2,15 @@ package ru.fix.gradle.release.plugin
 
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.api.logging.LogLevel
 import java.io.File
 
 
 class BranchGardener(private val project: Project) {
 
     fun createRelease() {
-        val git = GitExtensionConfiguration(project).buildGitClient()
+        val git = GitExtensionConfiguration(project).openGitRepository()
+
         val versionManager = VersionManager(git)
 
         if (git.isUncommittedChangesExist()) {
@@ -100,7 +102,7 @@ class BranchGardener(private val project: Project) {
     }
 
     fun createReleaseBranch() {
-        val git = GitExtensionConfiguration(project).buildGitClient()
+        val git = GitExtensionConfiguration(project).openGitRepository()
         val versionManager = VersionManager(git)
 
         if (git.isUncommittedChangesExist()) {

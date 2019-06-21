@@ -1,7 +1,8 @@
 object Vers {
-    val kotlin = "1.3.10"
+    val kotlin = "1.3.31"
     val dokka = "0.9.18"
-    val junit = "5.2.0"
+    val junit = "5.4.2"
+    val hamkrest = "1.7.0.0"
 }
 
 object Libs {
@@ -14,6 +15,8 @@ object Libs {
     val junit_api = "org.junit.jupiter:junit-jupiter-api:${Vers.junit}"
     val junit_engine = "org.junit.jupiter:junit-jupiter-engine:${Vers.junit}"
 
+    val mockito = "org.mockito:mockito-all:1.10.19"
+    val hamkrest = "com.natpryce:hamkrest:${Vers.hamkrest}"
     val mockk = "io.mockk:mockk:1.8.13"
 
 
@@ -22,6 +25,7 @@ object Libs {
     val jsch = "com.jcraft:jsch.agentproxy.jsch:0.0.9"
     val jsch_proxy_jna = "com.jcraft:jsch.agentproxy.usocket-jna:0.0.9"
     val jsch_proxy_sshagent = "com.jcraft:jsch.agentproxy.sshagent:0.0.9"
+
 }
 
 

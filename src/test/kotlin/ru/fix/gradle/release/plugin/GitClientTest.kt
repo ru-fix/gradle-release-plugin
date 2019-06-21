@@ -1,17 +1,19 @@
 package ru.fix.gradle.release.plugin
 
-import org.eclipse.jgit.errors.RepositoryNotFoundException
+import com.natpryce.hamkrest.anyElement
+import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.containsSubstring
 import org.eclipse.jgit.lib.Config
 import org.eclipse.jgit.lib.Constants
 import org.eclipse.jgit.storage.file.FileBasedConfig
 import org.eclipse.jgit.util.FS
 import org.eclipse.jgit.util.SystemReader
 import org.gradle.internal.impldep.com.google.common.io.Files
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
+import java.io.File
+import java.nio.file.Paths
 
 
 /**
@@ -23,32 +25,39 @@ import org.junit.jupiter.api.assertThrows
 @Disabled("It is required that user manually provides test data to run this test case.")
 class GitClientTest {
 
-    @Test
-    fun `fetch git`() {
-        GitClient().fetchTags()
-
+    fun withClient(block: (GitClient) -> Unit) = GitClient().use { git ->
+        git.find(Paths.get("").toAbsolutePath().toFile())
+        block(git)
     }
 
     @Test
-    fun `list tags`() {
-        println(GitClient().listTags())
+    fun `git fetch do not throw exception`() = withClient { git ->
+        git.fetchTags()
     }
 
     @Test
-    fun `get current branch`() {
-        assertNotNull(GitClient().getCurrentBranch())
+    fun `list tags returns tags`() = withClient { git ->
+
+        git.fetchTags()
+
+        assertThat(git.listTags(), List<String>::isNotEmpty)
+        assertThat(git.listTags(), anyElement(containsSubstring("1.2")))
     }
 
     @Test
-    fun `current branch exist`() {
-        GitClient().run {
-            assertTrue(isLocalBranchExists(getCurrentBranch()))
-        }
+    fun `get current branch`() = withClient { git ->
+        assertNotNull(git.getCurrentBranch())
+        assertThat(git.getCurrentBranch(), String::isNotEmpty)
     }
 
     @Test
-    fun `check for uncommitted`() {
-        println(GitClient().isUncommittedChangesExist())
+    fun `current branch exist`() = withClient { git ->
+        assertTrue(git.isLocalBranchExists(git.getCurrentBranch()))
+    }
+
+    @Test
+    fun `check for uncommitted changes do not throws exception`() = withClient { git ->
+        git.isUncommittedChangesExist()
     }
 
     @Test
@@ -56,43 +65,8 @@ class GitClientTest {
         val dir = Files.createTempDir()
         dir.deleteOnExit()
 
-
-        class TestSystemReader(private val default: SystemReader) : SystemReader() {
-
-            // Test environment
-            override fun getenv(variable: String?): String? {
-                return when(variable){
-                    Constants.GIT_DIR_KEY -> dir.absolutePath
-                    else -> default.getenv(variable)
-                }
-            }
-
-            //Other methods do not changes
-            override fun getHostname(): String {
-                return default.hostname
-            }
-            override fun getTimezone(`when`: Long): Int {
-                return default.getTimezone(`when`)
-            }
-            override fun openUserConfig(parent: Config?, fs: FS?): FileBasedConfig {
-                return default.openUserConfig(parent, fs)
-            }
-            override fun getProperty(key: String?): String {
-                return default.getProperty(key)
-            }
-            override fun openSystemConfig(parent: Config?, fs: FS?): FileBasedConfig {
-                return default.openSystemConfig(parent, fs)
-            }
-            override fun getCurrentTime(): Long {
-                return default.currentTime
-            }
-        }
-
-
-        SystemReader.setInstance(TestSystemReader(SystemReader.getInstance()))
-
-        assertThrows<RepositoryNotFoundException> {
-            GitClient()
+        GitClient().use {git ->
+            assertFalse(git.find(dir))
         }
     }
 }

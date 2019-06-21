@@ -5,16 +5,23 @@ import org.gradle.api.Project
 
 class GitExtensionConfiguration(private val project: Project) {
     fun buildGitClient(): GitClient {
-        return if (isCredentialsSupplied()) {
+
+        val git: GitClient
+
+        if (isCredentialsSupplied()) {
             val login = project.property(ProjectProperties.GIT_LOGIN).toString()
             val password = project.property(ProjectProperties.GIT_PASSWORD).toString()
 
             project.logger.lifecycle("Git credentials are supplied for $login.")
-            GitClient(GitCredentials(login, password))
+            git = GitClient(GitCredentials(login, password))
         } else {
             project.logger.lifecycle("Git credentials are not supplied.")
-            GitClient()
+            git = GitClient()
         }
+
+        git.find(project.projectDir)
+
+        return git
     }
 
     private fun isCredentialsSupplied(): Boolean {

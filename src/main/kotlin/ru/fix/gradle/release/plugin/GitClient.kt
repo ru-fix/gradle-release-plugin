@@ -22,19 +22,40 @@ import java.io.FileInputStream
 class GitCredentials(val login: String, val password: String)
 
 class GitClient(
-        private val credentials: GitCredentials?) : AutoCloseable {
-
-    constructor() : this(credentials = null)
+        private val credentials: GitCredentials? = null) : AutoCloseable {
 
 
     private val logger = Logging.getLogger(Git::class.simpleName)
 
-    private val git = Git(FileRepositoryBuilder()
-            .readEnvironment()
-            .findGitDir()
-            .setMustExist(true)
-            .build())
-            .also { logger.lifecycle("Git repository: ${it.repository?.directory}") }
+    private lateinit var git: Git
+
+    /**
+     * search and open existing repo
+     * @return false if repo does not exist
+     */
+    fun find(path: File): Boolean {
+
+
+        val builder = FileRepositoryBuilder()
+                .readEnvironment()
+                .findGitDir(path)
+
+        val exist =
+                if (builder.gitDir != null || builder.workTree != null) {
+                    git = Git(builder.build())
+                    git.repository?.objectDatabase?.exists() ?: false
+                } else {
+                    false
+                }
+
+        if (exist) {
+            logger.lifecycle("Found git repository at: ${git.repository?.directory}")
+        } else {
+            logger.lifecycle("Failed to find git repository.")
+        }
+
+        return exist
+    }
 
 
     private fun createJschSessionFactory(): JschConfigSessionFactory {
@@ -251,7 +272,9 @@ class GitClient(
     }
 
     override fun close() {
-        git.close()
+        if (::git.isInitialized) {
+            git.close()
+        }
     }
 }
 

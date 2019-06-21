@@ -68,6 +68,7 @@ group = "ru.fix"
 
 dependencies {
     compile(Libs.kotlin_stdlib)
+    compile(Libs.kotlin_jdk8)
     compile(Libs.kotlin_reflect)
 
     compile(gradleApi())
@@ -81,6 +82,8 @@ dependencies {
     testImplementation(Libs.junit_api)
     testRuntimeOnly(Libs.junit_engine)
 
+    testCompile(Libs.hamkrest)
+    testCompile(Libs.mockito)
     testCompile(Libs.mockk)
 }
 

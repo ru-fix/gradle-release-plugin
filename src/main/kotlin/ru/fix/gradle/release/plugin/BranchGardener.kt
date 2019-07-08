@@ -57,14 +57,16 @@ class BranchGardener(private val project: Project) {
 
         project.logger.lifecycle("Creating release for version $version")
 
-        val files = File("./").walkTopDown()
+        val files =  project.projectDir.walkBottomUp()
+                .filter { it.isFile }
                 .filter { it.name == "gradle.properties" }
 
-        val fileList = files.toList();
+        val fileList = files.toList()
 
         if (fileList.isEmpty()) {
             throw GradleException("There are no gradle.properties in project. Terminating")
         }
+
 
         val tempBranch = "temp_release_${extension.releaseBranchPrefix}$version"
 
@@ -75,7 +77,7 @@ class BranchGardener(private val project: Project) {
             }
 
             createBranch(tempBranch, true)
-            fileList.forEach { versionManager.updateVersionInFile(it.absolutePath, version) }
+            fileList.forEach { file -> versionManager.updateVersionInFile(file.absolutePath, version) }
 
             commitFilesInIndex("Updating version to $version")
             val tagRef = createTag(version, "Release $version")

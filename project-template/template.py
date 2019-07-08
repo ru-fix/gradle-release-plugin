@@ -370,12 +370,14 @@ dependencies {
     testRuntimeOnly(Libs.slf4j_simple)
 }
 """)
-write(f"{projectLocation}/{projectLocation}/src/main/kotlin/Main.kts","""
+write(f"{projectLocation}/{projectLocation}/src/main/kotlin/Main.kt","""
 class Main {
 }
 """)
 
-write(f"{projectLocation}/{projectLocation}/src/test/kotlin/MainTest.kts","""
+write(f"{projectLocation}/{projectLocation}/src/test/kotlin/MainTest.kt","""
+import org.junit.jupiter.api.Test
+
 class MainTest {
     @Test
     fun test(){

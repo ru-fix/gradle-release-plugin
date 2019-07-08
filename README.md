@@ -279,10 +279,25 @@ To deploy project to maven central you have
  - create account on sonatype
  - generate private key and sign artifacts before publication 
  
-Generating private key.  
+Generate private key or use existing one.  
+If you already have `my-sec-key.gpg` you should import it to local storage:  
+```
+gpg --allow-secret-key-import --import my-sec-key.gpg
+```  
 Export private key to old format: `secring.gpg`   
 `gpg --export-secret-keys -o secring.gpg`
 
+Install travis ci
+```
+sudo apt install ruby ruby-dev
+sudo gem install travis
+PATH=$PATH:/usr/local/bin
+```
+Login to travis
+```
+travis login
+```
+ 
 Encrypt `secring.gpg` and add it to your project repository `secring.gpg.enc`
 ```
 travis encrypt-file secring.gpg 

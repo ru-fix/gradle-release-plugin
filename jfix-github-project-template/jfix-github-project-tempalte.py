@@ -95,4 +95,12 @@ env:
 
 template = Template(travisTemplateString)
 print("* * * .travis.yml * * *")
-print(template.render(key=key, secure=secure))
+
+renderedTravis = template.render(key=key, secure=secure)
+print(renderedTravis)
+renderedTravisFile = f"{projectLocation}/.travis.yml"
+
+if not os.path.isfile(renderedTravisFile):
+    with open(renderedTravisFile, "w") as out:
+        out.write(renderedTravis)
+

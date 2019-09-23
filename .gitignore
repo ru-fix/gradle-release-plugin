@@ -4,7 +4,8 @@
 
 ### Gradle template
 .gradle
-/build/
+build/
+out/
 
 # Ignore Gradle GUI config
 gradle-app.setting

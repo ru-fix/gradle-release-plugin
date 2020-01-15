@@ -42,6 +42,15 @@ git push
 
 ## Plugin tasks
 
+All plugin tasks works with git repository.  
+In order to ensure actual state of local repository they try to fetch data from remote repository.
+If `git remote -v` urls point to **http(s)** destinations then plugin task will require http credentials.  
+User can provide them via `-Pgit.login=<git.login>` and `-Pgit.password=<git.password>` gradle properties.
+
+If `git remote -v` urls point to **ssh** destinations then tasks will look for an ssh key. 
+
+ 
+
 ### createReleaseBranch
 Creates new branch in local git repository. 
 By default base branch name is `/master` and target branch name is `/release/x.y`. 
@@ -84,6 +93,7 @@ Configuration:
  * mainBranch: String - base branch name, by default - `/master`
  * releaseBranchPrefix: String - prefix for release branch, by default - `/release/`
  
+
 Properties:
  * ru.fix.gradle.release.login: String - login for remote git repository
  * ru.fix.gradle.release.password: String - password for remote git repository

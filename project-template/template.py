@@ -301,6 +301,17 @@ subprojects {
         dependsOn(dokkaTask)
     }
     
+    configure<NexusPublishExtension> {
+        repositories {
+            sonatype {
+                username.set("$repositoryUser")
+                password.set("$repositoryPassword")
+                useStaging.set(true)
+            }
+        }
+        clientTimeout.set(java.time.Duration.of(3, java.time.temporal.ChronoUnit.MINUTES))
+    }
+
     project.afterEvaluate {
         publishing {
             publications {
@@ -348,17 +359,6 @@ subprojects {
                     }
                 }
             }
-        }
-
-        configure<NexusPublishExtension> {
-            repositories {
-                sonatype {
-                    username.set("$repositoryUser")
-                    password.set("$repositoryPassword")
-                    useStaging.set(true)
-                }
-    }
-            clientTimeout.set(java.time.Duration.of(3, java.time.temporal.ChronoUnit.MINUTES))
         }
     }
 

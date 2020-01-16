@@ -93,7 +93,7 @@ if travisRequired:
           if: tag =~ ^\d+\.\d+\.\d+$
           install: skip
           before_script: openssl aes-256-cbc -K $encrypted_{{key}}_key -iv $encrypted_{{key}}_iv -in secring.gpg.enc -out secring.gpg -d
-          script: ./gradlew clean build publish
+          script: ./gradlew --info clean build publishToSonatype closeAndReleaseRepository
     env:
       global:
       - signingSecretKeyRingFile="`pwd`/secring.gpg"
@@ -203,14 +203,27 @@ buildscript {
     repositories {
         jcenter()
         mavenCentral()
+        mavenLocal()
     }
     dependencies {
-        classpath(Libs.gradle_release_plugin)
-        classpath(Libs.dokka_gradle_plugin)
         classpath(Libs.kotlin_stdlib)
         classpath(Libs.kotlin_jdk8)
         classpath(Libs.kotlin_reflect)
+
+        classpath(Libs.gradle_release_plugin)
+        classpath(Libs.dokka_gradle_plugin)
+        classpath(Libs.asciidoctor)
+
     }
+}
+
+plugins {
+    kotlin("jvm") version "${Vers.kotlin}" apply false
+    signing
+    `maven-publish`
+    id(Libs.nexus_publish_plugin) version "0.4.0" apply false
+    id(Libs.nexus_staging_plugin) version "0.21.2"
+    id("org.asciidoctor.convert") version Vers.asciidoctor
 }
 
 
@@ -233,12 +246,13 @@ val signingKeyId by envConfig()
 val signingPassword by envConfig()
 val signingSecretKeyRingFile by envConfig()
 
-
-plugins {
-    kotlin("jvm") version "${Vers.kotlin}" apply false
-    signing
-    `maven-publish`
-    id("org.asciidoctor.convert") version Vers.asciidoctor
+nexusStaging {
+    packageGroup = "ru.fix"
+    stagingProfileId = "1f0730098fd259"
+    username = "$repositoryUser"
+    password = "$repositoryPassword"
+    numberOfRetries = 50
+    delayBetweenRetriesInMillis = 3_000
 }
 
 apply {
@@ -253,9 +267,11 @@ subprojects {
         plugin("signing")
         plugin("java")
         plugin("org.jetbrains.dokka")
+        plugin(Libs.nexus_publish_plugin)
     }
 
     repositories {
+        mavenLocal()
         jcenter()
         mavenCentral()
         if(!repositoryUrl.isNullOrEmpty()){
@@ -272,6 +288,10 @@ subprojects {
     val dokkaTask by tasks.creating(DokkaTask::class){
         outputFormat = "javadoc"
         outputDirectory = "$buildDir/dokka"
+
+        //TODO: wait dokka support JDK11 - https://github.com/Kotlin/dokka/issues/428
+        //TODO: wait dokka fix https://github.com/Kotlin/dokka/issues/464
+        enabled = false
     }
 
     val dokkaJar by tasks.creating(Jar::class) {
@@ -280,9 +300,11 @@ subprojects {
         from(dokkaTask.outputDirectory)
         dependsOn(dokkaTask)
     }
-
+    
     project.afterEvaluate {
         publishing {
+            publications {
+                //Internal repository setup
             repositories {
                 maven {
                     url = uri("$repositoryUrl")
@@ -295,8 +317,7 @@ subprojects {
                 }
             }
     
-            publications {
-                register("maven", MavenPublication::class) {
+                create<MavenPublication>("maven") {
                     from(components["java"])
     
                     artifact(sourcesJar)
@@ -304,8 +325,8 @@ subprojects {
     
                     pom {
                         name.set("${project.group}:${project.name}")
-                        description.set("{{project}} {{description}}")
-                        url.set("https://github.com/ru-fix/{{project}}")
+                        description.set("https://github.com/ru-fix/${rootProject.name}")
+                        url.set("https://github.com/ru-fix/${rootProject.name}")
                         licenses {
                             license {
                                 name.set("The Apache License, Version 2.0")
@@ -314,44 +335,53 @@ subprojects {
                         }
                         developers {
                             developer {
-                                id.set("swarmshine")
-                                name.set("Kamil Asfandiyarov")
-                                url.set("https://github.com/swarmshine")
+                                id.set("JFix Team")
+                                name.set("JFix Team")
+                                url.set("https://github.com/ru-fix/")
                             }
                         }
                         scm {
-                            url.set("https://github.com/ru-fix/{{project}}")
-                            connection.set("https://github.com/ru-fix/{{project}}.git")
-                            developerConnection.set("https://github.com/ru-fix/{{project}}.git")
+                            url.set("https://github.com/ru-fix/${rootProject.name}")
+                            connection.set("https://github.com/ru-fix/${rootProject.name}.git")
+                            developerConnection.set("https://github.com/ru-fix/${rootProject.name}.git")
                         }
                     }
                 }
             }
         }
-    }
-    configure<SigningExtension> {
 
+        configure<NexusPublishExtension> {
+            repositories {
+                sonatype {
+                    username.set("$repositoryUser")
+                    password.set("$repositoryPassword")
+                    useStaging.set(true)
+                }
+    }
+            clientTimeout.set(java.time.Duration.of(3, java.time.temporal.ChronoUnit.MINUTES))
+        }
+    }
+
+    configure<SigningExtension> {
         if (!signingKeyId.isNullOrEmpty()) {
             project.ext["signing.keyId"] = signingKeyId
             project.ext["signing.password"] = signingPassword
             project.ext["signing.secretKeyRingFile"] = signingSecretKeyRingFile
-
             logger.info("Signing key id provided. Sign artifacts for $project.")
-
             isRequired = true
         } else {
             logger.warn("${project.name}: Signing key not provided. Disable signing for  $project.")
             isRequired = false
         }
-
         sign(publishing.publications)
     }
 
     tasks {
         withType<KotlinCompile> {
-            kotlinOptions.jvmTarget = "1.8"
+            kotlinOptions {
+                jvmTarget = "1.8"
         }
-
+        }
         withType<Test> {
             useJUnitPlatform()
 
@@ -363,7 +393,10 @@ subprojects {
                 exceptionFormat = TestExceptionFormat.FULL
             }
         }
+    }
+}
         
+tasks {
         withType<AsciidoctorTask> {
             sourceDir = project.file("asciidoc")
             resources(closureOf<CopySpec> {

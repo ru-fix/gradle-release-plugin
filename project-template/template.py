@@ -77,7 +77,7 @@ if travisRequired:
     travisTemplateString = """
     language: java
     jdk:
-    - oraclejdk8
+    - openjdk11
     cache:
       directories:
       - "$HOME/.gradle"
@@ -128,34 +128,47 @@ def write(path, tempalte):
 
 write(f"{projectLocation}/buildSrc/src/main/kotlin/Dependencies.kt","""
 object Vers {
-    val kotlin = "1.3.41"
-    val sl4j = "1.7.25"
-    val dokka = "0.9.18"
-    val gradle_release_plugin = "1.3.8"
-    val junit = "5.2.0"
-    val hamkrest = "1.4.2.2"
+    //Plugins
+    const val gradle_release_plugin = "1.3.9"
+    const val dokkav = "0.9.18"
+    const val asciidoctor = "1.5.9.2"
+    
+    //Dependencies
+    const val kotlin = "1.3.61"
+    const val kotlin_coroutines = "1.3.3"
+    const val junit = "5.5.2"
+    const val log4j =  "2.12.0"
 }
 
 object Libs {
-    val kotlin_stdlib = "org.jetbrains.kotlin:kotlin-stdlib:${Vers.kotlin}"
-    val kotlin_jdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Vers.kotlin}"
-    val kotlin_reflect = "org.jetbrains.kotlin:kotlin-reflect:${Vers.kotlin}"
+    //Plugins
+    const val gradle_release_plugin = "ru.fix:gradle-release-plugin:${Vers.gradle_release_plugin}"
+    const val dokka_gradle_plugin = "org.jetbrains.dokka:dokka-gradle-plugin:${Vers.dokkav}"
+    const val asciidoctor = "org.asciidoctor:asciidoctor-gradle-plugin:${Vers.asciidoctor}"
+    
+    //Dependencies
+    const val kotlin_stdlib = "org.jetbrains.kotlin:kotlin-stdlib:${Vers.kotlin}"
+    const val kotlin_jdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Vers.kotlin}"
+    const val kotlin_reflect = "org.jetbrains.kotlin:kotlin-reflect:${Vers.kotlin}"
+    const val kotlinx_coroutines_core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Vers.kotlin_coroutines}"
 
-    val gradle_release_plugin = "ru.fix:gradle-release-plugin:${Vers.gradle_release_plugin}"
-    val dokka_gradle_plugin = "org.jetbrains.dokka:dokka-gradle-plugin:${Vers.dokka}"
+    const val mu_kotlin_logging = "io.github.microutils:kotlin-logging:1.7.6"
+    const val log4j_core = "org.apache.logging.log4j:log4j-core:${Vers.log4j}"
+    const val slf4j_over_log4j = "org.apache.logging.log4j:log4j-slf4j-impl:${Vers.log4j}"
+    
+    const val junit_api = "org.junit.jupiter:junit-jupiter-api:${Vers.junit}"
+    const val junit_params = "org.junit.jupiter:junit-jupiter-params:${Vers.junit}"
+    const val junit_engine = "org.junit.jupiter:junit-jupiter-engine:${Vers.junit}"
+    //1.9.3 has a bug https://github.com/mockk/mockk/issues/280
+    const val mockk = "io.mockk:mockk:1.9.2"
+    const val kotlin_test = "io.kotlintest:kotlintest-runner-junit5:3.4.2"
+}
 
-    val slf4j_api = "org.slf4j:slf4j-api:${Vers.sl4j}"
-    val slf4j_simple = "org.slf4j:slf4j-simple:${Vers.sl4j}"
+enum class Projs{
+    `project-name`,
+    ;
 
-    val mockito = "org.mockito:mockito-all:1.10.19"
-    val mockito_kotiln = "com.nhaarman:mockito-kotlin-kt1.1:1.5.0"
-    val kotlin_logging = "io.github.microutils:kotlin-logging:1.4.9"
-
-    val junit_api = "org.junit.jupiter:junit-jupiter-api:${Vers.junit}"
-    val junit_parametri = "org.junit.jupiter:junit-jupiter-params:${Vers.junit}"
-    val junit_engine = "org.junit.jupiter:junit-jupiter-engine:${Vers.junit}"
-    val hamkrest = "com.natpryce:hamkrest:${Vers.hamkrest}"
-    val hamcrest = "org.hamcrest:hamcrest-all:1.3"
+    val asDependency get(): String = ":$name"
 }
 """)
 write(f"{projectLocation}/buildSrc/build.gradle.kts","""
@@ -225,6 +238,7 @@ plugins {
     kotlin("jvm") version "${Vers.kotlin}" apply false
     signing
     `maven-publish`
+    id("org.asciidoctor.convert") version Vers.asciidoctor
 }
 
 apply {
@@ -267,54 +281,54 @@ subprojects {
         dependsOn(dokkaTask)
     }
 
-
-    publishing {
-        repositories {
-            maven {
-                url = uri("$repositoryUrl")
-                if (url.scheme.startsWith("http", true)) {
-                    credentials {
-                        username = "$repositoryUser"
-                        password = "$repositoryPassword"
+    project.afterEvaluate {
+        publishing {
+            repositories {
+                maven {
+                    url = uri("$repositoryUrl")
+                    if (url.scheme.startsWith("http", true)) {
+                        credentials {
+                            username = "$repositoryUser"
+                            password = "$repositoryPassword"
+                        }
                     }
                 }
             }
-        }
-
-        publications {
-            register("maven", MavenPublication::class) {
-                from(components["java"])
-
-                artifact(sourcesJar)
-                artifact(dokkaJar)
-
-                pom {
-                    name.set("${project.group}:${project.name}")
-                    description.set("{{project}} {{description}}")
-                    url.set("https://github.com/ru-fix/{{project}}")
-                    licenses {
-                        license {
-                            name.set("The Apache License, Version 2.0")
-                            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                        }
-                    }
-                    developers {
-                        developer {
-                            id.set("swarmshine")
-                            name.set("Kamil Asfandiyarov")
-                            url.set("https://github.com/swarmshine")
-                        }
-                    }
-                    scm {
+    
+            publications {
+                register("maven", MavenPublication::class) {
+                    from(components["java"])
+    
+                    artifact(sourcesJar)
+                    artifact(dokkaJar)
+    
+                    pom {
+                        name.set("${project.group}:${project.name}")
+                        description.set("{{project}} {{description}}")
                         url.set("https://github.com/ru-fix/{{project}}")
-                        connection.set("https://github.com/ru-fix/{{project}}.git")
-                        developerConnection.set("https://github.com/ru-fix/{{project}}.git")
+                        licenses {
+                            license {
+                                name.set("The Apache License, Version 2.0")
+                                url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                            }
+                        }
+                        developers {
+                            developer {
+                                id.set("swarmshine")
+                                name.set("Kamil Asfandiyarov")
+                                url.set("https://github.com/swarmshine")
+                            }
+                        }
+                        scm {
+                            url.set("https://github.com/ru-fix/{{project}}")
+                            connection.set("https://github.com/ru-fix/{{project}}.git")
+                            developerConnection.set("https://github.com/ru-fix/{{project}}.git")
+                        }
                     }
                 }
             }
         }
     }
-
     configure<SigningExtension> {
 
         if (!signingKeyId.isNullOrEmpty()) {
@@ -347,6 +361,21 @@ subprojects {
                 events(TestLogEvent.PASSED, TestLogEvent.FAILED, TestLogEvent.SKIPPED)
                 showStandardStreams = true
                 exceptionFormat = TestExceptionFormat.FULL
+            }
+        }
+        
+        withType<AsciidoctorTask> {
+            sourceDir = project.file("asciidoc")
+            resources(closureOf<CopySpec> {
+                from("asciidoc")
+                include("**/*.png")
+            })
+            doLast {
+                copy {
+                    from(outputDir.resolve("html5"))
+                    into(project.file("docs"))
+                    include("**/*.html", "**/*.png")
+                }
             }
         }
     }

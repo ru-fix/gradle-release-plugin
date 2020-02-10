@@ -49,7 +49,8 @@ User can provide them via `-Pgit.login=<git.login>` and `-Pgit.password=<git.pas
 
 If `git remote -v` urls point to **ssh** destinations then tasks will look for an ssh key. 
 
- 
+
+![](docs/gradle-release-plugin.png?raw=true)
 
 ### createReleaseBranch
 Creates new branch in local git repository. 

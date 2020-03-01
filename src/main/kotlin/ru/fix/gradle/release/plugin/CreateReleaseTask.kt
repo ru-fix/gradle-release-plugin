@@ -1,9 +1,8 @@
 package ru.fix.gradle.release.plugin
 
 import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
+import org.gradle.api.internal.tasks.userinput.UserInputHandler
 import org.gradle.api.tasks.TaskAction
-import java.io.File
 
 open class CreateReleaseTask : DefaultTask() {
 
@@ -13,6 +12,6 @@ open class CreateReleaseTask : DefaultTask() {
      */
     @TaskAction
     fun createRelease() {
-        BranchGardener(project).createRelease()
+        BranchGardener(project, services.get(UserInputHandler::class.java)).createRelease()
     }
 }

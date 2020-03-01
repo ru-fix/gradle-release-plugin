@@ -5,9 +5,12 @@ import org.eclipse.jgit.transport.CredentialItem
 import org.eclipse.jgit.transport.CredentialsProvider
 import org.eclipse.jgit.transport.URIish
 import org.gradle.api.Project
+import org.gradle.api.internal.tasks.userinput.UserInputHandler
 
 
-class GitCredentialsProvider(private val project: Project) : CredentialsProvider() {
+class GitCredentialsProvider(
+        private val project: Project,
+        private val userInputHanlder: UserInputHandler) : CredentialsProvider() {
     override fun isInteractive(): Boolean {
         return true
     }
@@ -24,7 +27,8 @@ class GitCredentialsProvider(private val project: Project) : CredentialsProvider
             return systemPropertyLogin
         }
 
-        val consoleLogin = System.console().readLine("> Please, enter your login: ")
+
+        val consoleLogin = userInputHanlder.askQuestion ("> Please, enter your login: ")
         return consoleLogin
     }
 

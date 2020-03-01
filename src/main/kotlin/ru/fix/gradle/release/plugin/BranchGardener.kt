@@ -3,7 +3,6 @@ package ru.fix.gradle.release.plugin
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.logging.LogLevel
-import java.io.File
 
 
 class BranchGardener(private val project: Project) {
@@ -14,7 +13,7 @@ class BranchGardener(private val project: Project) {
         val versionManager = VersionManager(git)
 
         if (git.isUncommittedChangesExist()) {
-            project.logger.lifecycle("" +
+            project.logger.log(LogLevel.ERROR, "" +
                     "Could not create new release due to uncommitted changes. " +
                     "Please commit your current work before creating new release.")
             return
@@ -57,7 +56,7 @@ class BranchGardener(private val project: Project) {
 
         project.logger.lifecycle("Creating release for version $version")
 
-        val files =  project.projectDir.walkBottomUp()
+        val files = project.projectDir.walkBottomUp()
                 .filter { it.isFile }
                 .filter { it.name == "gradle.properties" }
 
@@ -108,7 +107,7 @@ class BranchGardener(private val project: Project) {
         val versionManager = VersionManager(git)
 
         if (git.isUncommittedChangesExist()) {
-            project.logger.lifecycle("" +
+            project.logger.log(LogLevel.ERROR, "" +
                     "Could not create new release branch due to uncommitted changes. " +
                     "Please commit your current work before creating new release branch.")
             return

@@ -86,6 +86,7 @@ val sourcesJar by tasks.creating(Jar::class) {
 }
 
 val dokkaTask by tasks.creating(DokkaTask::class) {
+    enabled = false
     outputFormat = "javadoc"
     outputDirectory = "$buildDir/dokka"
 }

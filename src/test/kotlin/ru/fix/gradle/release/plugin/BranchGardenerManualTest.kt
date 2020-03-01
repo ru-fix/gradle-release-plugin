@@ -12,7 +12,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import java.lang.Exception
 
 @Disabled("Test creates release in current repository, only for manual launching")
 @ExtendWith(MockKExtension::class)
@@ -47,9 +46,7 @@ class BranchGardenerManualTest {
 
 
         every { project.hasProperty(ProjectProperties.GIT_LOGIN) } returns false
-        every { project.property(ProjectProperties.GIT_LOGIN) } returns null
         every { project.hasProperty(ProjectProperties.GIT_PASSWORD) } returns false
-        every { project.property(ProjectProperties.GIT_PASSWORD) } returns null
         every { project.hasProperty(ProjectProperties.RELEASE_BRANCH_VERSION) } returns true
         every { project.property(ProjectProperties.RELEASE_BRANCH_VERSION) } returns "1.3"
 

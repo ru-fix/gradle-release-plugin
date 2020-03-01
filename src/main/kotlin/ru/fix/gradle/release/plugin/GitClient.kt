@@ -19,10 +19,7 @@ import java.io.File
 import java.io.FileInputStream
 
 
-class GitCredentials(val login: String, val password: String)
-
-class GitClient(
-        private val credentials: GitCredentials? = null) : AutoCloseable {
+class GitClient(private val credentialsProvider: GitCredentialsProvider) : AutoCloseable {
 
     val directory: String?
         get() = git.repository?.directory?.absolutePath
@@ -36,7 +33,6 @@ class GitClient(
      * @return false if repo does not exist
      */
     fun find(path: File): Boolean {
-
 
         val builder = FileRepositoryBuilder()
                 .readEnvironment()
@@ -110,10 +106,8 @@ class GitClient(
         val sessionFactory = createJschSessionFactory()
         SshSessionFactory.setInstance(sessionFactory)
 
-        if (credentials != null) {
-            logger.lifecycle("Pushing on behalf of ${credentials.login}")
-            command.setCredentialsProvider(UsernamePasswordCredentialsProvider(credentials.login, credentials.password))
-        }
+        command.setCredentialsProvider(credentialsProvider)
+
         command.setTransportConfigCallback { transport ->
             if (transport is SshTransport) {
                 logger.lifecycle("Configure ssh transport")
@@ -137,10 +131,7 @@ class GitClient(
             }
 
         } catch (exc: Exception) {
-            throw GradleException(
-                    "Failed to fetch tags from remote repository.".let {
-                        if (credentials == null) "$it\n Be aware that there was no credentials provided." else it
-                    }, exc)
+            throw GradleException("Failed to fetch tags from remote repository.", exc)
         }
 
         logger.lifecycle("Tags fetched")

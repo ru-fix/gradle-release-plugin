@@ -1,13 +1,7 @@
-import org.gradle.api.publication.maven.internal.action.MavenInstallAction
-import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
-import org.gradle.internal.authentication.DefaultBasicAuthentication
-import org.gradle.kotlin.dsl.repositories
-import org.gradle.kotlin.dsl.version
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.net.URI
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
@@ -20,7 +14,7 @@ buildscript {
     }
 
     dependencies {
-        classpath(Libs.dokkaGradlePlugin)
+        classpath(Libs.dokka_gradle_plugin)
         classpath(Libs.kotlin_stdlib)
         classpath(Libs.kotlin_jdk8)
         classpath(Libs.kotlin_reflect)
@@ -67,24 +61,22 @@ apply {
 group = "ru.fix"
 
 dependencies {
-    compile(Libs.kotlin_stdlib)
-    compile(Libs.kotlin_jdk8)
-    compile(Libs.kotlin_reflect)
+    api(Libs.kotlin_stdlib)
+    api(Libs.kotlin_jdk8)
+    api(Libs.kotlin_reflect)
 
-    compile(gradleApi())
+    api(gradleApi())
 
-    compile(Libs.jgit)
-    compile(Libs.semver)
-    compile(Libs.jsch)
-    compile(Libs.jsch_proxy_jna)
-    compile(Libs.jsch_proxy_sshagent)
+    api(Libs.jgit)
+    api(Libs.semver)
+    api(Libs.jsch)
+    api(Libs.jsch_proxy_jna)
+    api(Libs.jsch_proxy_sshagent)
 
-    testImplementation(Libs.junit_api)
-    testRuntimeOnly(Libs.junit_engine)
-
-    testCompile(Libs.hamkrest)
-    testCompile(Libs.mockito)
-    testCompile(Libs.mockk)
+    testApi(Libs.junit_api)
+    testApi(Libs.mockk)
+    testApi(Libs.kotlin_test)
+    testImplementation(Libs.junit_engine)
 }
 
 val sourcesJar by tasks.creating(Jar::class) {
@@ -181,13 +173,13 @@ signing {
 tasks {
 
     withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.jvmTarget = "11"
     }
 
     withType<Test> {
         useJUnitPlatform()
 
-        maxParallelForks = 10
+        maxParallelForks = 4
 
         testLogging {
             events(TestLogEvent.PASSED, TestLogEvent.FAILED, TestLogEvent.SKIPPED)
@@ -195,5 +187,4 @@ tasks {
             exceptionFormat = TestExceptionFormat.FULL
         }
     }
-
 }

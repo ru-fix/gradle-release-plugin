@@ -1,18 +1,21 @@
 package ru.fix.gradle.release.plugin
 
-import com.natpryce.hamkrest.anyElement
-import com.natpryce.hamkrest.assertion.assertThat
-import com.natpryce.hamkrest.containsSubstring
-import org.eclipse.jgit.lib.Config
-import org.eclipse.jgit.lib.Constants
-import org.eclipse.jgit.storage.file.FileBasedConfig
-import org.eclipse.jgit.util.FS
-import org.eclipse.jgit.util.SystemReader
+import io.kotlintest.matchers.boolean.shouldBeTrue
+import io.kotlintest.matchers.collections.shouldNotBeEmpty
+import io.kotlintest.matchers.string.shouldNotBeEmpty
+import io.kotlintest.matchers.types.shouldNotBeNull
+import io.kotlintest.matchers.withClue
+import io.mockk.every
+import io.mockk.impl.annotations.MockK
+import io.mockk.junit5.MockKExtension
+import org.gradle.api.Project
+import org.gradle.api.logging.Logger
 import org.gradle.internal.impldep.com.google.common.io.Files
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import java.io.File
+import org.junit.jupiter.api.extension.ExtendWith
 import java.nio.file.Paths
 
 
@@ -23,9 +26,23 @@ import java.nio.file.Paths
  * - with or without credentials
  */
 @Disabled("It is required that user manually provides test data to run this test case.")
+@ExtendWith(MockKExtension::class)
 class GitClientManualTest {
 
-    fun withClient(block: (GitClient) -> Unit) = GitClient().use { git ->
+    @MockK
+    lateinit var project: Project
+
+    @MockK
+    lateinit var logger: Logger
+
+    @BeforeEach
+    fun beforeEach(){
+        every { project.hasProperty(ProjectProperties.GIT_LOGIN) } returns false
+        every { project.hasProperty(ProjectProperties.GIT_PASSWORD) } returns false
+
+    }
+
+    fun withClient(block: (GitClient) -> Unit) = GitClient(GitCredentialsProvider(project)).use { git ->
         git.find(Paths.get("").toAbsolutePath().toFile())
         block(git)
     }
@@ -37,22 +54,24 @@ class GitClientManualTest {
 
     @Test
     fun `list tags returns tags`() = withClient { git ->
-
         git.fetchTags()
 
-        assertThat(git.listTags(), List<String>::isNotEmpty)
-        assertThat(git.listTags(), anyElement(containsSubstring("1.2")))
+        val tags = git.listTags()
+        withClue(tags) {
+            tags.shouldNotBeEmpty()
+            tags.any { it.contains("1.2") }.shouldBeTrue()
+        }
     }
 
     @Test
     fun `get current branch`() = withClient { git ->
-        assertNotNull(git.getCurrentBranch())
-        assertThat(git.getCurrentBranch(), String::isNotEmpty)
+        git.getCurrentBranch().shouldNotBeNull()
+        git.getCurrentBranch().shouldNotBeEmpty()
     }
 
     @Test
     fun `current branch exist`() = withClient { git ->
-        assertTrue(git.isLocalBranchExists(git.getCurrentBranch()))
+        git.isLocalBranchExists(git.getCurrentBranch()).shouldBeTrue()
     }
 
     @Test
@@ -65,7 +84,7 @@ class GitClientManualTest {
         val dir = Files.createTempDir()
         dir.deleteOnExit()
 
-        GitClient().use {git ->
+        GitClient(GitCredentialsProvider(project)).use { git ->
             assertFalse(git.find(dir))
         }
     }

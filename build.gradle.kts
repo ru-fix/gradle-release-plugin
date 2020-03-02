@@ -4,7 +4,9 @@ import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
-
+import de.marcphilipp.gradle.nexus.NexusPublishExtension
+import java.time.Duration
+import java.time.temporal.ChronoUnit
 
 buildscript {
 
@@ -40,6 +42,13 @@ val signingKeyId by envConfig()
 val signingPassword by envConfig()
 val signingSecretKeyRingFile by envConfig()
 
+nexusStaging {
+    packageGroup = "ru.fix"
+    username = "$repositoryUser"
+    password = "$repositoryPassword"
+    numberOfRetries = 50
+    delayBetweenRetriesInMillis = 3_000
+}
 
 repositories {
     jcenter()
@@ -49,7 +58,6 @@ repositories {
 
 plugins {
     kotlin("jvm") version "${Vers.kotlin}"
-
     signing
     `maven-publish`
     id(Libs.nexus_publish_plugin) version "0.4.0"
@@ -104,6 +112,16 @@ val dokkaJar by tasks.creating(Jar::class) {
     dependsOn(dokkaTask)
 }
 
+configure<NexusPublishExtension> {
+    repositories {
+        sonatype {
+            username.set("$repositoryUser")
+            password.set("$repositoryPassword")
+            useStaging.set(true)
+        }
+    }
+    clientTimeout.set(Duration.of(3, ChronoUnit.MINUTES))
+}
 
 publishing {
     repositories {

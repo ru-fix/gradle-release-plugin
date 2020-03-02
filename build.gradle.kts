@@ -58,6 +58,10 @@ plugins {
 
 apply {
     plugin("org.jetbrains.dokka")
+    plugin("maven-publish")
+    plugin("signing")
+    plugin("java")
+    plugin(Libs.nexus_publish_plugin)
 }
 
 group = "ru.fix"

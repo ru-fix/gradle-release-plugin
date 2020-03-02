@@ -2,7 +2,6 @@ package ru.fix.gradle.release.plugin
 
 import org.gradle.api.GradleException
 import org.gradle.api.Project
-import org.gradle.api.internal.tasks.userinput.UserInputHandler
 import org.gradle.api.logging.LogLevel
 
 
@@ -126,16 +125,12 @@ class BranchGardener(
         }
 
         val supposedVersion = versionManager.supposeBranchVersion()
-        project.logger.lifecycle("Please specify release version (Should be in x.y format) [$supposedVersion]")
-
 
         while (true) {
 
-            var input = readLine()
-
-            if (input == null || input.isBlank()) {
-                input = supposedVersion
-            }
+            var input = userInteractor.promptQuestion(
+                    "Please specify release version (Should be in x.y format) [$supposedVersion]",
+                    supposedVersion)
 
             if (versionManager.branchVersionExists(input)) {
                 project.logger.lifecycle("Version $input already exists")

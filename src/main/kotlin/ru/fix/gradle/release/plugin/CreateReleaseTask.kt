@@ -11,6 +11,6 @@ open class CreateReleaseTask : DefaultTask() {
      */
     @TaskAction
     fun createRelease() {
-        BranchGardener(project, UserInteractor(project, services)).createRelease()
+        BranchGardener(project, UserInteractor(project)).createRelease()
     }
 }

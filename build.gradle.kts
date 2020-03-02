@@ -49,11 +49,13 @@ repositories {
 
 plugins {
     kotlin("jvm") version "${Vers.kotlin}"
-    `maven-publish`
-    signing
 
-    id("java")
+    signing
+    `maven-publish`
+    id(Libs.nexus_publish_plugin) version "0.4.0"
+    id(Libs.nexus_staging_plugin) version "0.21.2"
 }
+
 apply {
     plugin("org.jetbrains.dokka")
 }

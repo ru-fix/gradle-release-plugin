@@ -10,6 +10,8 @@ object Libs {
     val kotlin_jdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Vers.kotlin}"
     val kotlin_reflect = "org.jetbrains.kotlin:kotlin-reflect:${Vers.kotlin}"
 
+    const val nexus_staging_plugin = "io.codearte.nexus-staging"
+    const val nexus_publish_plugin = "de.marcphilipp.nexus-publish"
 
     val junit_api = "org.junit.jupiter:junit-jupiter-api:${Vers.junit}"
     val junit_engine = "org.junit.jupiter:junit-jupiter-engine:${Vers.junit}"

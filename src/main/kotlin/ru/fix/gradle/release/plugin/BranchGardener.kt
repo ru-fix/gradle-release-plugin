@@ -7,8 +7,7 @@ import org.gradle.api.logging.LogLevel
 
 
 class BranchGardener(
-        private val project: Project,
-        private val userInputHanlder: UserInputHandler) {
+        private val project: Project) {
 
     fun createRelease() {
         val git = GitExtensionConfiguration(project).openGitRepository()

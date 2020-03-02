@@ -5,12 +5,10 @@ import org.eclipse.jgit.transport.CredentialItem
 import org.eclipse.jgit.transport.CredentialsProvider
 import org.eclipse.jgit.transport.URIish
 import org.gradle.api.Project
-import org.gradle.api.internal.tasks.userinput.UserInputHandler
 
 
 class GitCredentialsProvider(
-        private val project: Project,
-        private val userInputHanlder: UserInputHandler) : CredentialsProvider() {
+        private val project: Project) : CredentialsProvider() {
     override fun isInteractive(): Boolean {
         return true
     }
@@ -27,9 +25,15 @@ class GitCredentialsProvider(
             return systemPropertyLogin
         }
 
+        val loginPrompt = "> Please, enter your login: "
 
-        val consoleLogin = userInputHanlder.askQuestion ("> Please, enter your login: ")
-        return consoleLogin
+        val console = System.console()
+        if(console != null){
+            return console.readLine(loginPrompt) ?: throw IllegalArgumentException("Failed to read user input")
+        }
+
+        print(loginPrompt)
+        return readLine() ?: throw IllegalArgumentException("Failed to read user input")
     }
 
     fun resolvePassword(): CharArray {
@@ -44,8 +48,14 @@ class GitCredentialsProvider(
             return systemPropertyPassword.toCharArray()
         }
 
-        val consolePassword = System.console().readPassword("> Please, enter your password: ")
-        return consolePassword
+        val passwordPrompt = "> Please, enter your password: "
+        val console = System.console()
+        if(console != null) {
+            return console.readPassword(passwordPrompt) ?: throw IllegalArgumentException("Failed to read user input")
+        }
+
+        print(passwordPrompt)
+        return readLine()?.toCharArray() ?: throw IllegalArgumentException("Failed to read user input")
     }
 
     override fun get(uri: URIish, vararg credentialItems: CredentialItem): Boolean {

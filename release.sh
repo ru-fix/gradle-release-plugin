@@ -1,3 +1,4 @@
+#!/bin/bash
 # Since gradle-release-plugin can not use itself to release itselt we have to use this script
 git fetch --tags
 git tag --list | sort -V

@@ -16,7 +16,7 @@ jobs:
       if: tag =~ ^\d+\.\d+\.\d+$
       install: skip
       before_script: openssl aes-256-cbc -K $encrypted_721207a5a7f8_key -iv $encrypted_721207a5a7f8_iv -in secring.gpg.enc -out secring.gpg -d
-      script: ./gradlew clean build publish
+      script: ./gradlew -Dorg.gradle.internal.publish.checksums.insecure=true --info clean build publishToSonatype closeAndReleaseRepository
 env:
   global:
     - signingSecretKeyRingFile="`pwd`/secring.gpg"

@@ -113,7 +113,7 @@ publishing {
     }
     publications {
 
-        register("maven", MavenPublication::class) {
+        create<MavenPublication>("maven") {
             from(components["java"])
 
             artifact(sourcesJar)
@@ -154,20 +154,16 @@ publishing {
 }
 
 signing {
-
     if (!signingKeyId.isNullOrEmpty()) {
         project.ext["signing.keyId"] = signingKeyId
         project.ext["signing.password"] = signingPassword
         project.ext["signing.secretKeyRingFile"] = signingSecretKeyRingFile
-
         logger.info("Signing key id provided. Sign artifacts for $project.")
-
         isRequired = true
     } else {
         logger.warn("${project.name}: Signing key not provided. Disable signing for  $project.")
         isRequired = false
     }
-
     sign(publishing.publications)
 }
 

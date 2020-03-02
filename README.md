@@ -1,13 +1,14 @@
 # Gradle Release Plugin
 [![Maven Central](https://img.shields.io/maven-central/v/ru.fix/gradle-release-plugin.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22ru.fix%22)
 
-gradle-release-plugin automates release procedure for gradle based projects. 
-It automatically creates release branches, update project version in root `gradle.properties` file 
-and commit this update in dynamically created tag with autoincremented version.
+gradle-release-plugin automates release procedure for gradle based projects.
+It can automatically create new release branch and new release. 
+New release is created by updating version in root `gradle.properties` file by template `version=x.y.z` and commiting this update in distinct revision tagged by auto incremented version number.
 
-- [Gradle Release Plugin](#gradle-release-plugin)
 - [Usages](#usages)
   * [Short hints](#short-hints)
+    + [Minor fix with createRelease](#minor-fix-with-createrelease)
+    + [Major change with createReleaseBranch](#major-change-with-createreleasebranch) 
   * [Plugin tasks](#plugin-tasks)
     + [createReleaseBranch](#createreleasebranch)
     + [createRelease](#createrelease)
@@ -15,6 +16,7 @@ and commit this update in dynamically created tag with autoincremented version.
   * [Gradle Release Flow](#gradle-release-flow)
     + [Principles](#principles)
     + [Release procedure](#release-procedure)
+    + [Masterless branching](#masterless-branching)
 - [New Project template](#new-project-template)
   * [Travis and Maven Central](#travis-and-maven-central)
   * [Generate .travis.yml](#generate-travisyml)
@@ -25,42 +27,61 @@ and commit this update in dynamically created tag with autoincremented version.
 # Usages
 
 ## Short hints
-Create minor fix/feature in same release branch, e.g. tag 1.3.5 -> tag 1.3.6
-```
+
+### Minor fix with createRelease
+
+Create and merge minor fix or feature into release branch `release/1.3`.  
+Now you are ready to create new release with gradle-release-plugin.  
+Last tag was 1.3.5 -> new tag will be 1.3.6  
+```shell script
 git checkout release/1.3 
 gradle createRelease
+```
+ Optional manual push:  
+ Plugin by default tries to push changes by itself if ssh key or https credentials provided.  
+ You have to push new tags manually only if plugin failes to resolve credentials.
+```shell script
 
-#optional, plugin by default tries to push changes by itself if ssh key or https credentials provided
 git push --tags
 ```
-Create new major version in a new branch, e.g. release/1.3 -> release/1.4
+
+### Major change with createReleaseBranch
+Create new major version branch with gradle-release-plugin, e.g. `release/1.3` -> `release/1.4`
 ```
 git checkout release/1.3 
 gradle createReleaseBranch
 git push
 ```
+Now you have new branch `release/1.4`.  
+You can create feature branches based on `release/1.4` and start developing new features.
 
 ## Plugin tasks
 
 All plugin tasks works with git repository.  
 In order to ensure actual state of local repository they try to fetch data from remote repository.
-If `git remote -v` urls point to **http(s)** destinations then plugin task will require http credentials.  
-User can provide them via `-Pgit.login=<git.login>` and `-Pgit.password=<git.password>` gradle properties.
-
-If `git remote -v` urls point to **ssh** destinations then tasks will look for an ssh key. 
+If remote repository requires credentials, plugin task will try to resolve them.  
+User can provide credentials via:
+ * gradle properties:   
+    `-Pru.fix.gradle.release.login=<git.login>`     
+    `-Pru.fix.gradle.release.password=<git.password>`
+ * system properties:  
+  `-Dru.fix.gradle.release.login=<git.login>`  
+  `-Dru.fix.gradle.release.password=<git.password>`
+  
+If plugin task could not resolve credentials or ssh key it will prompt user for them in console. 
 
 
 ![](docs/gradle-release-plugin.png?raw=true)
 
 ### createReleaseBranch
-Creates new branch in local git repository. 
-By default base branch name is `/master` and target branch name is `/release/x.y`. 
-During execution command asks user to specify major and minor version `x.y`
-Plugin will suggest user new version by default 
+Creates new branch in local git repository.   
+By default current branch will be used as a base branch and target branch name will use format `/release/x.y`.   
+During execution command asks user to specify major and minor version in `x.y` format.
+Plugin will look for existing release branches and suggest user a new version by default. 
  
 ```
-#before:
-└─master  <--
+# ----- before -----
+└─master  <-- current branch
 └─release
   └─1.0
   └─1.1
@@ -70,40 +91,45 @@ Plugin will suggest user new version by default
 gradle createReleaseBranch
 > 1.2
 
-#after:
+# ----- after -----
 └─master
 └─release
   └─1.0
   └─1.1
-  └─1.2  <--
+  └─1.2  <-- current branch
 └─feature
   └─my-new-future
 ``` 
+Configuration:
+  * not required
+  
+Optional properties:
+ * ru.fix.gradle.release.login: String - login for remote git repository
+ * ru.fix.gradle.release.password: String - password for remote git repository 
  
 ### createRelease 
-Searches for existing tags in repository that name matches version template `x.y.z`.    
-Finds latest one.    
-Calculates new version by incrementing latest one.    
-Stores new version in `gradle.properties` file.     
+Searches for existing tags in repository. 
+Select tags with names matching version template `x.y.z`.    
+Finds latest version among them.    
+Calculates new version by incrementing latest version by 1.    
+Stores new version in `gradle.properties` file in format `version=x.y.z+1`.     
 Commit `gradle.properties` file with new tag name `x.y.z+1` into repository.  
-User should run createRelease task on one of release branches.  
-For https connection use parameters: `-Pgit.login=<git.login>` `-Pgit.password=<git.password>`
-No credentials required in case if user uses ssh key.
+User should run createRelease task on one of release branches `release/x.y`.    
     
 Configuration:
- * mainBranch: String - base branch name, by default - `/master`
  * releaseBranchPrefix: String - prefix for release branch, by default - `/release/`
  
-
-Properties:
+Optional properties:
  * ru.fix.gradle.release.login: String - login for remote git repository
  * ru.fix.gradle.release.password: String - password for remote git repository
- * ru.fix.gradle.release.checkoutTag: Boolean - whether to left repository with checkouted tag or with checkouted release branch
- * ru.fix.gradle.release.releaseBranchVersion: String - which branch to select for release in x.y format. By default current branch will be used.  
+ * ru.fix.gradle.release.checkoutTag: Boolean - whether to left repository with checkouted tag or with checkouted release branch. 
+ Usefull for pipelines. 
+ By default createRelease will left repository pointing to release branch.
+ * ru.fix.gradle.release.releaseBranchVersion: String - which branch to select for release in x.y format. E.g. 1.2 specify that release should be created based on release/1.2 branch. By default current branch will be used.  
 
 ```
-#before
-└─master  <--
+# ----- before -----
+└─master  <-- current branch
 └─release
   └─1.0
   └─1.1
@@ -115,11 +141,11 @@ tag 1.1.3
 git checkout -b release/1.1 
 gradle createRelease
 
-#after
+# ----- after -----
 └─master
 └─release
   └─1.0
-  └─1.1  <--
+  └─1.1  <-- current branch
 tag 1.0.1
 tag 1.1.1
 tag 1.1.2
@@ -146,18 +172,14 @@ apply {
 
 //not required for default configuration
 configure<ReleaseExtension> {
-    mainBranch = "master"
-    releaseBranchPrefix = "releases/release-"
+    releaseBranchPrefix = "release/"
 }
 ```
 * Groovy DSL
 ```
 buildscript {
-    repositories {
-        mavenCentral()
-    }
     dependencies {
-        classpath "ru.fix:gradle-release-plugin:1.3.6"
+        classpath "ru.fix:gradle-release-plugin:$version"
     }
 }
 
@@ -170,24 +192,14 @@ apply plugin : "ru.fix.gradle.release"
 
 //not required for default configuration
 'ru.fix.gradle.release' {
-    mainBranch = "master"
-    releaseBranchPrefix = "releases/release-"
-}
-
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    releaseBranchPrefix = "release/"
 }
 ```
 
 
 Manually create branch `/master` with latest version of project.  
 ```
-└─master
+└─master <-
 ```
 Create new release branch with gradle plugin `gradle createReleaseBranch`  and specify version `1.0`.
 ```
@@ -196,7 +208,8 @@ gradle createReleaseBranch
 
 └─master
 └─releases
-  └─release/1.0  <--
+  └─release
+    └─1.0  <--
 ```  
 This will create new branch `/master` -> `/release/1.0`  
 Checkout branch `/release/1.1`  
@@ -208,7 +221,7 @@ gradle createRelease
 └─master
 └─release
   └─1.0
-tag 1.0.1  <--
+tag 1.0.1 
 ```  
 This will create new tag `1.0.1`
 This tag will contain single change: updated gradle.properties file with content:
@@ -218,23 +231,29 @@ version=1.0.1
 
 Now CI can checkout tag `1.0.1`, build and publish your project `gradle clean build publish`.
 
-You can commit fixes to `/release/release-1.0` and create new tag:  
+You can merge new fixes to `/release/release-1.0` and create new tagged releases:  
 `gradle createRelease` will create new tag `1.0.2`.
 ```
 gradle createRelease
 
 └─master
 └─release
-  └─1.0
+  └─1.0 <--
 tag 1.0.1
-tag 1.0.2  <--
+tag 1.0.2  
 ```  
-If you decided to publish new version based on `/master` branch you can create new release
+If you decided to publish new major version based on `/master` branch you can create new release
 branch `gradle createReleaseBranch` and specify version `1.1`.  
 This will create new branch `/master` -> `/release/1.1`
 ```
+# ----- before ----- 
+└─master <--
+└─release
+  └─1.0
+
 gradle createReleaseBreanch
 
+# ----- after -----
 └─master
 └─release
   └─1.0
@@ -271,6 +290,23 @@ name will be `1.3.8`
 - In file `gradle.properties` `version` property is replaced from `1.y-SNAPSHOT` to `1.3.8`
 - `gradle.properties` is being committed with new tag name `1.3.8`
 
+### Masterless branching
+You can maintain repository without master branch.
+And create new release branches from previous ones.
+For example, with createRelaseBranch you can create release branch based on currently selected branch. 
+```
+# ----- before ----- 
+└─release
+  └─1.0 <--
+
+gradle createReleaseBreanch
+
+# ----- after -----
+└─release
+  └─1.0
+  └─1.1  <--
+```  
+Masterless flow works in the same way, the only exception is that you do not need to merge all changes to master branch all the time. 
 
 # New Project template
 Common project configuration requires properties provided through `gradle.properties` or environment:
@@ -285,6 +321,8 @@ signingSecretKeyRingFile= /path/to/.gnupg/secring.gpg key store file
 Use `gpg --export-secret-keys -o secring.gpg` to export secret key to old format supported by gradle
 ```  
 ## Travis and Maven Central
+
+
 
 To deploy project to maven central you have 
  - create account on sonatype
@@ -351,7 +389,7 @@ Script
 ## How to build this project
 To build and deploy gradle release plugin project to local maven repository run:
 ```
-gradle build install
+gradle build publishToMavenLocal
 ```
 
 ## Deploy this project to remote repository

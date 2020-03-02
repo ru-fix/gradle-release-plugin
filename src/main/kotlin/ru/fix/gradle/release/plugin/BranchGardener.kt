@@ -118,42 +118,35 @@ class BranchGardener(
         val extension = project.extensions.findByType(ReleaseExtension::class.java)
         checkNotNull(extension) { "Failed to find ReleaseExtension" }
 
-
-        if (git.getCurrentBranch() != extension.mainBranch) {
-            throw GradleException("You are not in the main branch: ${extension.mainBranch}.\n" +
-                    "Release branch can be built only from ${extension.mainBranch} branch.")
-        }
+        val currentBranch = git.getCurrentBranch()
+        project.logger.lifecycle("Creating new release branch based on: $currentBranch")
 
         val supposedVersion = versionManager.supposeBranchVersion()
 
-        while (true) {
 
-            var input = userInteractor.promptQuestion(
-                    "Please specify release version (Should be in x.y format) [$supposedVersion]",
-                    supposedVersion)
+        var input = userInteractor.promptQuestion(
+                "Please specify release version in x.y format (Default: $supposedVersion)",
+                supposedVersion)
 
-            if (versionManager.branchVersionExists(input)) {
-                project.logger.lifecycle("Version $input already exists")
-                continue
-            }
-
-            if (!versionManager.isValidBranchVersion(input)) {
-                project.logger.lifecycle("Please specify valid version")
-                continue
-            }
-
-            val branch = "${extension.releaseBranchPrefix}$input"
-
-            if (git.isLocalBranchExists(branch)) {
-                project.logger.lifecycle("Branch with name $branch already exists")
-                continue
-            }
-
-            git.createBranch(branch, true)
-
-            project.logger.lifecycle("Branch $branch was successfully created")
-            break
-
+        if (versionManager.branchVersionExists(input)) {
+            project.logger.lifecycle("Version $input already exists")
+            return
         }
+
+        if (!versionManager.isValidBranchVersion(input)) {
+            project.logger.lifecycle("Please specify valid version")
+            return
+        }
+
+        val branch = "${extension.releaseBranchPrefix}$input"
+
+        if (git.isLocalBranchExists(branch)) {
+            project.logger.lifecycle("Branch with name $branch already exists")
+            return
+        }
+
+        git.createBranch(branch, true)
+
+        project.logger.lifecycle("Branch $branch was successfully created based on $currentBranch")
     }
 }

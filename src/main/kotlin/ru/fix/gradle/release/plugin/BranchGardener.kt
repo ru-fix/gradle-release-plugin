@@ -7,10 +7,11 @@ import org.gradle.api.logging.LogLevel
 
 
 class BranchGardener(
-        private val project: Project) {
+        private val project: Project,
+        private val userInteractor: UserInteractor) {
 
     fun createRelease() {
-        val git = GitExtensionConfiguration(project).openGitRepository()
+        val git = GitExtensionConfiguration(project, userInteractor).openGitRepository()
 
         val versionManager = VersionManager(git)
 
@@ -105,7 +106,7 @@ class BranchGardener(
     }
 
     fun createReleaseBranch() {
-        val git = GitExtensionConfiguration(project).openGitRepository()
+        val git = GitExtensionConfiguration(project, userInteractor).openGitRepository()
         val versionManager = VersionManager(git)
 
         if (git.isUncommittedChangesExist()) {

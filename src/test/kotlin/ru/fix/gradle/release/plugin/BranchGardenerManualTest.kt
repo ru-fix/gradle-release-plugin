@@ -26,6 +26,9 @@ class BranchGardenerManualTest {
     @MockK
     lateinit var extensionContainer: ExtensionContainer
 
+    @MockK
+    lateinit var userInteractor: UserInteractor
+
     @BeforeEach
     fun init() {
         val msg = slot<String>()
@@ -60,12 +63,12 @@ class BranchGardenerManualTest {
         every { project.hasProperty(ProjectProperties.CHECKOUT_TAG) } returns true
         every { project.property(ProjectProperties.CHECKOUT_TAG) } returns false
 
-        BranchGardener(project).createRelease()
+        BranchGardener(project, userInteractor).createRelease()
 
     }
 
     @Test
     fun createReleaseBranch() {
-        BranchGardener(project).createReleaseBranch()
+        BranchGardener(project, userInteractor).createReleaseBranch()
     }
 }

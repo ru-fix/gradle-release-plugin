@@ -8,12 +8,18 @@ import org.gradle.api.Project
 
 
 class GitCredentialsProvider(
-        private val project: Project) : CredentialsProvider() {
+        private val project: Project,
+        private val userInteractor: UserInteractor) : CredentialsProvider() {
+
+    private val login by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { resolveLogin() }
+    private val password by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { resolvePassword() }
+
     override fun isInteractive(): Boolean {
         return true
     }
 
     fun resolveLogin(): String {
+        project.logger.lifecycle("Looking for gradle/system property ${ProjectProperties.GIT_LOGIN}")
         if (project.hasProperty(ProjectProperties.GIT_LOGIN)) {
             val propertyLogin = project.property(ProjectProperties.GIT_LOGIN).toString()
             if (propertyLogin.isNotEmpty()) {
@@ -24,19 +30,11 @@ class GitCredentialsProvider(
         if (systemPropertyLogin != null && systemPropertyLogin.isNotEmpty()) {
             return systemPropertyLogin
         }
-
-        val loginPrompt = "> Please, enter your login: "
-
-        val console = System.console()
-        if(console != null){
-            return console.readLine(loginPrompt) ?: throw IllegalArgumentException("Failed to read user input")
-        }
-
-        print(loginPrompt)
-        return readLine() ?: throw IllegalArgumentException("Failed to read user input")
+        return userInteractor.promptQuestion("Please, enter your login: ")
     }
 
     fun resolvePassword(): CharArray {
+        project.logger.lifecycle("Looking for gradle/system property ${ProjectProperties.GIT_PASSWORD}")
         if (project.hasProperty(ProjectProperties.GIT_PASSWORD)) {
             val propertyPassword = project.property(ProjectProperties.GIT_PASSWORD).toString()
             if (propertyPassword.isNotEmpty()) {
@@ -48,24 +46,18 @@ class GitCredentialsProvider(
             return systemPropertyPassword.toCharArray()
         }
 
-        val passwordPrompt = "> Please, enter your password: "
-        val console = System.console()
-        if(console != null) {
-            return console.readPassword(passwordPrompt) ?: throw IllegalArgumentException("Failed to read user input")
-        }
 
-        print(passwordPrompt)
-        return readLine()?.toCharArray() ?: throw IllegalArgumentException("Failed to read user input")
+        return userInteractor.promptPassword("Please, enter your password: ")
     }
 
     override fun get(uri: URIish, vararg credentialItems: CredentialItem): Boolean {
         for (credentialItem in credentialItems) {
             if (credentialItem is CredentialItem.Username) {
-                credentialItem.value = resolveLogin()
+                credentialItem.value = login
                 continue
             }
             if (credentialItem is CredentialItem.Password) {
-                credentialItem.value = resolvePassword()
+                credentialItem.value = password
                 continue
             }
             throw UnsupportedCredentialItem(uri, credentialItem.javaClass.name + ":" + credentialItem.promptText)

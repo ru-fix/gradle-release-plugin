@@ -35,6 +35,9 @@ class GitClientManualTest {
     @MockK
     lateinit var logger: Logger
 
+    @MockK
+    lateinit var userInteractor: UserInteractor
+
     @BeforeEach
     fun beforeEach(){
         every { project.hasProperty(ProjectProperties.GIT_LOGIN) } returns false
@@ -42,7 +45,7 @@ class GitClientManualTest {
 
     }
 
-    fun withClient(block: (GitClient) -> Unit) = GitClient(GitCredentialsProvider(project)).use { git ->
+    fun withClient(block: (GitClient) -> Unit) = GitClient(GitCredentialsProvider(project, userInteractor)).use { git ->
         git.find(Paths.get("").toAbsolutePath().toFile())
         block(git)
     }
@@ -84,7 +87,7 @@ class GitClientManualTest {
         val dir = Files.createTempDir()
         dir.deleteOnExit()
 
-        GitClient(GitCredentialsProvider(project)).use { git ->
+        GitClient(GitCredentialsProvider(project, userInteractor)).use { git ->
             assertFalse(git.find(dir))
         }
     }

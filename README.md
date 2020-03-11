@@ -123,7 +123,7 @@ Optional properties:
  * ru.fix.gradle.release.login: String - login for remote git repository
  * ru.fix.gradle.release.password: String - password for remote git repository
  * ru.fix.gradle.release.checkoutTag: Boolean - whether to left repository with checkouted tag or with checkouted release branch. 
- Usefull for pipelines. 
+ Useful for pipelines. 
  By default createRelease will left repository pointing to release branch.
  * ru.fix.gradle.release.releaseBranchVersion: String - which branch to select for release in x.y format. E.g. 1.2 specify that release should be created based on release/1.2 branch. By default current branch will be used.  
 

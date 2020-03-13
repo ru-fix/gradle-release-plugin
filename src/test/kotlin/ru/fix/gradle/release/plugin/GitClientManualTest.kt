@@ -20,12 +20,13 @@ import java.nio.file.Paths
 
 
 /**
- * It is required that user manually provides test data to run this test case.
+ * It is required that developer manually provides test data (git repository) to run this test case.
  * - git repository cloned by ssh
  * - git repository cloned by https
- * - with or without credentials
+ * - remote repository required or not required credentials
+ * - authenticate through ssh key or login/password
  */
-@Disabled("It is required that user manually provides test data to run this test case.")
+@Disabled("It is required that developer manually provides test data to run this test case.")
 @ExtendWith(MockKExtension::class)
 class GitClientManualTest {
 
@@ -36,7 +37,7 @@ class GitClientManualTest {
     lateinit var logger: Logger
 
     @MockK
-    lateinit var userInteractor: UserInteractor
+    lateinit var userInteractor: GradleUserInteractor
 
     @BeforeEach
     fun beforeEach(){

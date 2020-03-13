@@ -5,12 +5,17 @@ import org.gradle.api.tasks.TaskAction
 
 open class CreateReleaseTask : DefaultTask() {
 
-    /**
-     * Search for released versions based on existing tag names and creates
-     * new tag with incremented version
-     */
     @TaskAction
     fun createRelease() {
-        BranchGardener(project, UserInteractor(project)).createRelease()
+        val userInteractor = GradleUserInteractor(project)
+        try {
+            BranchGardener(
+                    project = project,
+                    userInteractor = userInteractor,
+                    projectFileSystemLookup = ProjectFilesLookup(project, userInteractor)).createRelease()
+        }catch (exc: Exception){
+            userInteractor.error(exc.message ?: "")
+            throw exc
+        }
     }
 }

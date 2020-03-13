@@ -7,6 +7,15 @@ open class CreateReleaseBranchTask : DefaultTask() {
 
     @TaskAction
     fun createReleaseBranch() {
-        BranchGardener(project, UserInteractor(project)).createReleaseBranch()
+        val userInteractor = GradleUserInteractor(project)
+        try {
+            BranchGardener(
+                    project,
+                    userInteractor,
+                    ProjectFilesLookup(project, userInteractor)).createReleaseBranch()
+        } catch (exc: Exception) {
+            userInteractor.error(exc.message ?: "")
+            throw exc
+        }
     }
 }

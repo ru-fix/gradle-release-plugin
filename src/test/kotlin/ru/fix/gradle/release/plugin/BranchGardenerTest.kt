@@ -5,6 +5,8 @@ import io.kotlintest.matchers.withClue
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
+import io.mockk.verify
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionContainer
 import org.junit.jupiter.api.AfterEach
@@ -18,7 +20,7 @@ import java.nio.file.Path
 class BranchGardenerTest {
 
     @MockK
-    lateinit var git: GitRepository
+    lateinit var gitRepo: GitRepository
 
     @MockK
     lateinit var project: Project
@@ -55,6 +57,7 @@ class BranchGardenerTest {
             toFile().deleteOnExit()
         }
         every { projectFilesLookup.findGradlePropertiesFile() } returns gradlePropertiesFile
+        every { projectFilesLookup.openGitRepository() } returns gitRepo
     }
 
     private fun mockDefaultExtension() {
@@ -66,6 +69,7 @@ class BranchGardenerTest {
         every { project.hasProperty(ProjectProperties.GIT_LOGIN) } returns false
         every { project.hasProperty(ProjectProperties.GIT_PASSWORD) } returns false
         every { project.hasProperty(ProjectProperties.RELEASE_BRANCH_VERSION) } returns false
+        every { project.hasProperty(ProjectProperties.CHECKOUT_TAG) } returns false
     }
 
     private fun mockLogging() {
@@ -74,7 +78,7 @@ class BranchGardenerTest {
 
     @Test
     fun `create release with uncommited changes`() {
-        every { git.isUncommittedChangesExist() } returns true
+        every { gitRepo.isUncommittedChangesExist() } returns true
         BranchGardener(project, userInteractor, projectFilesLookup).createRelease()
 
         withClue(userInteractor.journal){
@@ -84,9 +88,9 @@ class BranchGardenerTest {
 
     @Test
     fun `create release with wrong current branch`() {
-        every { git.isUncommittedChangesExist() } returns false
-        every { git.fetchTags() } returns Unit
-        every { git.getCurrentBranch() } returns "feature/my-feature-for-1.2"
+        every { gitRepo.isUncommittedChangesExist() } returns false
+        every { gitRepo.fetchTags() } returns Unit
+        every { gitRepo.getCurrentBranch() } returns "feature/my-feature-for-1.2"
         BranchGardener(project, userInteractor, projectFilesLookup).createRelease()
         withClue(userInteractor.journal){
             userInteractor.journal.any { it.contains("does not match") }.shouldBeTrue()
@@ -97,15 +101,21 @@ class BranchGardenerTest {
 
     @Test
     fun `create release`() {
-        every { git.isUncommittedChangesExist() } returns false
-        every { git.fetchTags() } returns Unit
-        every { git.getCurrentBranch() } returns "release/1.2"
-        every { git.listTags() } returns listOf("1.2.3")
+        every { gitRepo.isUncommittedChangesExist() } returns false
+        every { gitRepo.fetchTags() } returns Unit
+        every { gitRepo.getCurrentBranch() } returns "release/1.2"
+        every { gitRepo.listTags() } returns listOf("1.2.3")
+        every { gitRepo.isLocalBranchExists("temp_gradle_release_plugin/release/1.2.4") } returns false
+        every { gitRepo.createBranch("temp_gradle_release_plugin/release/1.2.4", true) } returns Unit
+        every { gitRepo.commitFilesInIndex("Release v1.2.4") } returns Unit
+        every { gitRepo.createTag("1.2.4", "Release v1.2.4") } returns mockk()
+
         BranchGardener(project, userInteractor, projectFilesLookup).createRelease()
 
         withClue(userInteractor.journal){
             userInteractor.journal.any { it.contains("version 1.2.4") }.shouldBeTrue()
         }
+        verify(exactly = 1) { gitRepo.createBranch("temp_gradle_release_plugin/release/1.2.4") }
     }
 
     private fun mockProperty(name: String, value: Any) {
@@ -115,7 +125,7 @@ class BranchGardenerTest {
 
     @Test
     fun `create release branch with uncommited changes`() {
-        every { git.isUncommittedChangesExist() } returns true
+        every { gitRepo.isUncommittedChangesExist() } returns true
         BranchGardener(project, userInteractor, projectFilesLookup).createReleaseBranch()
         withClue(userInteractor.journal){
             userInteractor.journal.any { it.contains("uncommitted changes") }.shouldBeTrue()

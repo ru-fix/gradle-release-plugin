@@ -66,7 +66,7 @@ class BranchGardener(
 
         val gradlePropertiesFile = projectFileSystemLookup.findGradlePropertiesFile()
 
-        val tempBranch = "temp_release_${extension.releaseBranchPrefix}$version"
+        val tempBranch = "temp_gradle_release_plugin/${extension.releaseBranchPrefix}$version"
 
         with(git) {
 
@@ -77,9 +77,8 @@ class BranchGardener(
             createBranch(tempBranch, true)
             versionManager.updateVersionInFile(gradlePropertiesFile.toAbsolutePath(), version)
 
-            commitFilesInIndex("Updating version to $version")
-            val tagRef = createTag(version, "Release $version")
-
+            commitFilesInIndex(extension.commitMessage(version))
+            val tagRef = createTag(extension.tagName(version), extension.commitMessage(version))
 
             if (project.hasProperty(ProjectProperties.CHECKOUT_TAG) &&
                     project.property(ProjectProperties.CHECKOUT_TAG).toString().toBoolean()) {

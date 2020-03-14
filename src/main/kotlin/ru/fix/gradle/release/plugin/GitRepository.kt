@@ -226,16 +226,14 @@ class GitRepository(
 
     }
 
-    fun createBranch(branch: String, checkout: Boolean = false): Ref {
+    fun createBranch(branch: String, checkout: Boolean = false) {
         logger.lifecycle("Creating branch $branch ${if (checkout) "and checkout" else ""}")
-        val ref = jGit.branchCreate().setName(branch).call()
-        return if (checkout) {
+        jGit.branchCreate().setName(branch).call()
+        if (checkout) {
             jGit
                     .checkout()
                     .setName(branch)
                     .call()
-        } else {
-            ref
         }
     }
 

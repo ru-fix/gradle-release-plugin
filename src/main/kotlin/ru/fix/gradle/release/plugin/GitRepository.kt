@@ -18,39 +18,37 @@ import org.gradle.api.logging.Logging
 import java.io.File
 import java.io.FileInputStream
 
+class GitRepositoryNotFound(searchPath: File) :
+        Exception("Can not find git repository with search path: $searchPath")
 
-class GitClient(private val credentialsProvider: GitCredentialsProvider) : AutoCloseable {
+class GitRepository(
+        private val credentialsProvider: GitCredentialsProvider,
+        private val jGit: Git) : AutoCloseable {
 
-    val directory: String?
-        get() = git.repository?.directory?.absolutePath
+    companion object {
+        fun openExisting(pathUnderGitControl: File, credentialsProvider: GitCredentialsProvider): GitRepository {
+            val repoBuilder = FileRepositoryBuilder()
+                    .readEnvironment()
+                    .findGitDir(pathUnderGitControl)
 
-    private val logger = Logging.getLogger(Git::class.simpleName)
-
-    private lateinit var git: Git
-
-    /**
-     * search and open existing repo
-     * @return false if repo does not exist
-     */
-    fun find(path: File): Boolean {
-
-        val builder = FileRepositoryBuilder()
-                .readEnvironment()
-                .findGitDir(path)
-
-        val exist =
-                if (builder.gitDir != null || builder.workTree != null) {
-                    git = Git(builder.build())
-                    git.repository?.objectDatabase?.exists() ?: false
-                } else {
-                    false
+            if (repoBuilder.gitDir != null || repoBuilder.workTree != null) {
+                val jGit = Git(repoBuilder.build())
+                val repositoryExist = jGit.repository?.objectDatabase?.exists() ?: false
+                if (repositoryExist) {
+                    return GitRepository(credentialsProvider, jGit)
                 }
-        return exist
+            }
+            throw GitRepositoryNotFound(pathUnderGitControl)
+        }
     }
+
+    private val logger = Logging.getLogger(GitRepository::class.qualifiedName)
+
+    val directory: String
+        get() = jGit.repository!!.directory!!.absolutePath
 
 
     private fun createJschSessionFactory(): JschConfigSessionFactory {
-
         return object : JschConfigSessionFactory() {
 
             override fun configure(host: OpenSshConfig.Host, session: Session) {
@@ -124,7 +122,7 @@ class GitClient(private val credentialsProvider: GitCredentialsProvider) : AutoC
         logger.lifecycle("Fetching tags")
 
         try {
-            git.fetch().apply {
+            jGit.fetch().apply {
                 setTagOpt(TagOpt.FETCH_TAGS)
                 setupTransport(this)
                 call()
@@ -139,7 +137,7 @@ class GitClient(private val credentialsProvider: GitCredentialsProvider) : AutoC
 
 
     fun listTags(): List<String> {
-        return git
+        return jGit
                 .tagList()
                 .call()
                 .mapNotNull { it.name }
@@ -147,17 +145,17 @@ class GitClient(private val credentialsProvider: GitCredentialsProvider) : AutoC
     }
 
 
-    fun getCurrentBranch(): String = git.repository.branch
+    fun getCurrentBranch(): String = jGit.repository.branch
 
     fun checkoutLocalBranch(branch: String) {
         logger.lifecycle("Checkout local branch $branch")
-        git.checkout()
+        jGit.checkout()
                 .setName(branch).call()
     }
 
     fun checkoutRemoteBranch(branch: String) {
         logger.lifecycle("Checkout remote branch $branch")
-        git.checkout()
+        jGit.checkout()
                 .setCreateBranch(true)
                 .setName(branch)
                 .setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.SET_UPSTREAM)
@@ -173,7 +171,7 @@ class GitClient(private val credentialsProvider: GitCredentialsProvider) : AutoC
 
         try {
 
-            git.push()
+            jGit.push()
                     .apply { setupTransport(this) }
                     .add(tagRef)
                     .call()
@@ -190,7 +188,7 @@ class GitClient(private val credentialsProvider: GitCredentialsProvider) : AutoC
 
     fun deleteBranch(name: String) {
         logger.lifecycle("Deleting branch $name")
-        git
+        jGit
                 .branchDelete()
                 .setBranchNames(name)
                 .setForce(true)
@@ -199,7 +197,7 @@ class GitClient(private val credentialsProvider: GitCredentialsProvider) : AutoC
 
     fun checkoutTag(tag: String) {
         logger.lifecycle("Checkout $tag tag")
-        git.checkout()
+        jGit.checkout()
                 .setCreateBranch(true)
                 .setName("tags/$tag")
                 .call()
@@ -209,7 +207,7 @@ class GitClient(private val credentialsProvider: GitCredentialsProvider) : AutoC
 
         logger.lifecycle("Creating tag $name with comment $comment")
 
-        return git
+        return jGit
                 .tag()
                 .setAnnotated(true)
                 .setName(name)
@@ -220,9 +218,9 @@ class GitClient(private val credentialsProvider: GitCredentialsProvider) : AutoC
     fun commitFilesInIndex(commitMessage: String) {
         logger.lifecycle("Committing files.")
 
-        git.add().addFilepattern(".")
+        jGit.add().addFilepattern(".")
                 .call()
-        git.commit()
+        jGit.commit()
                 .setMessage(commitMessage)
                 .call()
 
@@ -230,9 +228,9 @@ class GitClient(private val credentialsProvider: GitCredentialsProvider) : AutoC
 
     fun createBranch(branch: String, checkout: Boolean = false): Ref {
         logger.lifecycle("Creating branch $branch ${if (checkout) "and checkout" else ""}")
-        val ref = git.branchCreate().setName(branch).call()
+        val ref = jGit.branchCreate().setName(branch).call()
         return if (checkout) {
-            git
+            jGit
                     .checkout()
                     .setName(branch)
                     .call()
@@ -242,13 +240,13 @@ class GitClient(private val credentialsProvider: GitCredentialsProvider) : AutoC
     }
 
     fun isLocalBranchExists(branch: String): Boolean {
-        return git.branchList().call()
+        return jGit.branchList().call()
                 .stream().filter { "refs/heads/$branch" == it.name }
                 .findAny().isPresent
     }
 
     fun isUncommittedChangesExist(): Boolean {
-        val conflicting = git.status().call().uncommittedChanges
+        val conflicting = jGit.status().call().uncommittedChanges
         if (conflicting.isEmpty()) {
             return false
         } else {
@@ -258,9 +256,7 @@ class GitClient(private val credentialsProvider: GitCredentialsProvider) : AutoC
     }
 
     override fun close() {
-        if (::git.isInitialized) {
-            git.close()
-        }
+        jGit.close()
     }
 }
 

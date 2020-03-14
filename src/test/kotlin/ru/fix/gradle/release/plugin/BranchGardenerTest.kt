@@ -7,15 +7,18 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionContainer
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import java.nio.file.Files
+import java.nio.file.Path
 
 @ExtendWith(MockKExtension::class)
 class BranchGardenerTest {
 
     @MockK
-    lateinit var git: GitClient
+    lateinit var git: GitRepository
 
     @MockK
     lateinit var project: Project
@@ -28,6 +31,7 @@ class BranchGardenerTest {
 
     val userInteractor = JournaledTestUserInteractor()
 
+    lateinit var gradlePropertiesFile: Path
 
     @BeforeEach
     fun beforeEach() {
@@ -37,10 +41,20 @@ class BranchGardenerTest {
         mockDefaultExtension()
     }
 
+    @AfterEach
+    fun afterEach(){
+        releaseProjectLookup()
+    }
+
+    private fun releaseProjectLookup() {
+        Files.deleteIfExists(gradlePropertiesFile)
+    }
+
     private fun mockProjectLookup() {
-
-
-        every { projectFilesLookup.findGradlePropertiesFile() } returns Files.create
+        gradlePropertiesFile = Files.createTempFile("gradle.",".properties").apply {
+            toFile().deleteOnExit()
+        }
+        every { projectFilesLookup.findGradlePropertiesFile() } returns gradlePropertiesFile
     }
 
     private fun mockDefaultExtension() {
@@ -62,7 +76,6 @@ class BranchGardenerTest {
     fun `create release with uncommited changes`() {
         every { git.isUncommittedChangesExist() } returns true
         BranchGardener(project, userInteractor, projectFilesLookup).createRelease()
-
 
         withClue(userInteractor.journal){
             userInteractor.journal.any { it.contains("uncommitted changes") }.shouldBeTrue()

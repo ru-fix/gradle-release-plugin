@@ -14,8 +14,7 @@ class BranchGardener(
      * new tag with incremented version
      */
     fun createRelease() {
-
-        val git = projectFileSystemLookup.openGitRepository() ?: return
+        val git = projectFileSystemLookup.openGitRepository()
 
         val versionManager = VersionManager(git)
 
@@ -76,7 +75,7 @@ class BranchGardener(
             }
 
             createBranch(tempBranch, true)
-            versionManager.updateVersionInFile(gradlePropertiesFile.absolutePath, version)
+            versionManager.updateVersionInFile(gradlePropertiesFile.toAbsolutePath(), version)
 
             commitFilesInIndex("Updating version to $version")
             val tagRef = createTag(version, "Release $version")

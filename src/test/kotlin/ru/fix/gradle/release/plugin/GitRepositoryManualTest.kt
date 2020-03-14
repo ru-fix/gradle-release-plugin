@@ -9,9 +9,8 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import org.gradle.api.Project
-import org.gradle.api.logging.Logger
 import org.gradle.internal.impldep.com.google.common.io.Files
-import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -28,36 +27,36 @@ import java.nio.file.Paths
  */
 @Disabled("It is required that developer manually provides test data to run this test case.")
 @ExtendWith(MockKExtension::class)
-class GitClientManualTest {
+class GitRepositoryManualTest {
 
     @MockK
     lateinit var project: Project
 
     @MockK
-    lateinit var logger: Logger
-
-    @MockK
     lateinit var userInteractor: GradleUserInteractor
+
+    private val REPOSITORY_PATH = ""
 
     @BeforeEach
     fun beforeEach(){
         every { project.hasProperty(ProjectProperties.GIT_LOGIN) } returns false
         every { project.hasProperty(ProjectProperties.GIT_PASSWORD) } returns false
-
     }
 
-    fun withClient(block: (GitClient) -> Unit) = GitClient(GitCredentialsProvider(project, userInteractor)).use { git ->
-        git.find(Paths.get("").toAbsolutePath().toFile())
+    fun withRepository(block: (GitRepository) -> Unit) =
+            GitRepository.openExisting(
+                    Paths.get(REPOSITORY_PATH).toAbsolutePath().toFile(),
+                    GitCredentialsProvider(project, userInteractor)).use { git ->
         block(git)
     }
 
     @Test
-    fun `git fetch do not throw exception`() = withClient { git ->
+    fun `git fetch does not throw exception`() = withRepository { git ->
         git.fetchTags()
     }
 
     @Test
-    fun `list tags returns tags`() = withClient { git ->
+    fun `list tags returns tags`() = withRepository { git ->
         git.fetchTags()
 
         val tags = git.listTags()
@@ -68,18 +67,18 @@ class GitClientManualTest {
     }
 
     @Test
-    fun `get current branch`() = withClient { git ->
+    fun `get current branch`() = withRepository { git ->
         git.getCurrentBranch().shouldNotBeNull()
         git.getCurrentBranch().shouldNotBeEmpty()
     }
 
     @Test
-    fun `current branch exist`() = withClient { git ->
+    fun `current branch exist`() = withRepository { git ->
         git.isLocalBranchExists(git.getCurrentBranch()).shouldBeTrue()
     }
 
     @Test
-    fun `check for uncommitted changes do not throws exception`() = withClient { git ->
+    fun `check for uncommitted changes does not throw exception`() = withRepository { git ->
         git.isUncommittedChangesExist()
     }
 
@@ -87,9 +86,8 @@ class GitClientManualTest {
     fun `no repository in empty folder`() {
         val dir = Files.createTempDir()
         dir.deleteOnExit()
-
-        GitClient(GitCredentialsProvider(project, userInteractor)).use { git ->
-            assertFalse(git.find(dir))
+        Assertions.assertThrows(GitRepositoryNotFound::class.java) {
+            GitRepository.openExisting(dir, GitCredentialsProvider(project, userInteractor))
         }
     }
 }

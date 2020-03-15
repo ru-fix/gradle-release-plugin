@@ -16,7 +16,7 @@ class BranchGardener(
     fun createRelease() {
         val git = projectFileSystemLookup.openGitRepository()
 
-        val versionManager = VersionManager(git)
+        val versionManager = VersionManager(git, userInteractor)
 
         if (git.isUncommittedChangesExist()) {
             userInteractor.error("" +
@@ -106,7 +106,7 @@ class BranchGardener(
 
     fun createReleaseBranch() {
         val git = ProjectFilesLookup(project, userInteractor).openGitRepository()
-        val versionManager = VersionManager(git)
+        val versionManager = VersionManager(git, userInteractor)
 
         if (git.isUncommittedChangesExist()) {
             userInteractor.error("" +

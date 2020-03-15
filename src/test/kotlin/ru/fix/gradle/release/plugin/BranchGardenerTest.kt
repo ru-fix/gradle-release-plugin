@@ -109,13 +109,16 @@ class BranchGardenerTest {
         every { gitRepo.createBranch("temp_gradle_release_plugin/release/1.2.4", true) } returns Unit
         every { gitRepo.commitFilesInIndex("Release v1.2.4") } returns Unit
         every { gitRepo.createTag("1.2.4", "Release v1.2.4") } returns mockk()
+        every { gitRepo.checkoutLocalBranch("release/1.2") } returns Unit
+        every { gitRepo.deleteBranch("temp_gradle_release_plugin/release/1.2.4") } returns Unit
+        every { gitRepo.pushTag(any()) } returns Unit
 
         BranchGardener(project, userInteractor, projectFilesLookup).createRelease()
 
         withClue(userInteractor.journal){
             userInteractor.journal.any { it.contains("version 1.2.4") }.shouldBeTrue()
         }
-        verify(exactly = 1) { gitRepo.createBranch("temp_gradle_release_plugin/release/1.2.4") }
+        verify(exactly = 1) { gitRepo.createBranch("temp_gradle_release_plugin/release/1.2.4", true) }
     }
 
     private fun mockProperty(name: String, value: Any) {
@@ -126,7 +129,9 @@ class BranchGardenerTest {
     @Test
     fun `create release branch with uncommited changes`() {
         every { gitRepo.isUncommittedChangesExist() } returns true
+
         BranchGardener(project, userInteractor, projectFilesLookup).createReleaseBranch()
+
         withClue(userInteractor.journal){
             userInteractor.journal.any { it.contains("uncommitted changes") }.shouldBeTrue()
         }

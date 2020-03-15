@@ -1,20 +1,20 @@
 package ru.fix.gradle.release.plugin
 
 import com.github.zafarkhaja.semver.Version
-import org.gradle.api.logging.Logging
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.nio.file.Path
 import java.util.*
 
 
-class VersionManager(private val git: GitRepository) {
-
-    private val logger = Logging.getLogger(VersionManager::class.simpleName)!!
+class VersionManager(
+        private val git: GitRepository,
+        private val userInteractor: UserInteractor) {
 
     fun isValidBranchVersion(version: String): Boolean {
-        println("Checking $version")
-        return Regex("(\\d+)\\.(\\d+)").matches(version)
+        val pattern = "(\\d+)\\.(\\d+)"
+        userInteractor.info("Checking that version '$version' matches pattern '$pattern'")
+        return Regex(pattern).matches(version)
     }
 
 
@@ -47,13 +47,13 @@ class VersionManager(private val git: GitRepository) {
 
 
     fun updateVersionInFile(filename: Path, version: String) {
-        logger.lifecycle("Updating file $filename to version $version")
+        userInteractor.info("Updating file $filename to version $version")
         val props = Properties()
         props.load(FileInputStream(filename.toFile()))
         if (props.getProperty("version") != null) {
             props.setProperty("version", version)
         } else {
-            logger.lifecycle("There isn't version property, skipping")
+            userInteractor.info("There is no 'version' property in '$filename', skipping")
         }
 
         props.store(FileOutputStream(filename.toFile()), "")

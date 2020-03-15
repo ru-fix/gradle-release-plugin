@@ -30,27 +30,11 @@ class BranchGardener(
         val extension = project.extensions.findByType(ReleaseExtension::class.java)
         checkNotNull(extension) { "Failed to find ReleaseExtension" }
 
-
         // by default current branch is used as release branch
-        // but user can specify explicitly which branch
-        if (project.hasProperty(ProjectProperties.RELEASE_BRANCH_VERSION)) {
-            val releaseBranchVersion = project.property(ProjectProperties.RELEASE_BRANCH_VERSION).toString()
-            userInteractor.info("Using user defined branch version: $releaseBranchVersion")
-
-            if (!versionManager.isValidBranchVersion(releaseBranchVersion)) {
-                throw GradleException("Invalid release branch version: $releaseBranchVersion. Should be in x.y format")
-            }
-
-            val targetBranch = "${extension.releaseBranchPrefix}$releaseBranchVersion"
-            if (git.getCurrentBranch() != targetBranch) {
-                userInteractor.info("Switching to release branch $targetBranch")
-
-                if (git.isLocalBranchExists(targetBranch)) {
-                    git.checkoutLocalBranch(targetBranch)
-                } else {
-                    git.checkoutRemoteBranch(targetBranch)
-                }
-            }
+        // but user can specify explicitly which branch to use to create release
+        if (project.hasProperty(ProjectProperties.RELEASE_BRANCH)) {
+            val releaseBranch = project.property(ProjectProperties.RELEASE_BRANCH).toString()
+            switchToUserDefinedReleaseBranch(releaseBranch, git)
         }
 
         val branch = git.getCurrentBranch()
@@ -90,6 +74,19 @@ class BranchGardener(
             deleteBranch(tempBranch)
 
             pushTag(tagRef)
+        }
+    }
+
+    private fun switchToUserDefinedReleaseBranch(releaseBranch: String, git: GitRepository) {
+        userInteractor.info("Using user defined branch: $releaseBranch")
+
+        if (git.getCurrentBranch() != releaseBranch) {
+            userInteractor.info("Switching to release branch $releaseBranch")
+            if (git.isLocalBranchExists(releaseBranch)) {
+                git.checkoutLocalBranch(releaseBranch)
+            } else {
+                git.checkoutRemoteBranch(releaseBranch)
+            }
         }
     }
 

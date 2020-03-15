@@ -37,9 +37,7 @@ class BranchGardener(
         }
 
         val branch = git.getCurrentBranch()
-        if (!checkAndInformUserIfCurrentBanchIsInvalid(extension.releaseBranchPrefix, branch)) {
-            return
-        }
+        assertCurrentBanchNameIsValid(extension.releaseBranchPrefix, branch)
 
         val baseVersion = versionManager.extractVersionFromBranch(branch)
 
@@ -89,7 +87,7 @@ class BranchGardener(
         }
     }
 
-    private fun checkAndInformUserIfCurrentBanchIsInvalid(branchPrefix: String, currentBranch: String): Boolean {
+    private fun assertCurrentBanchNameIsValid(branchPrefix: String, currentBranch: String): Boolean {
         val pattern = "$branchPrefix(\\d+)\\.(\\d+)"
 
         userInteractor.info("Checking that branch '$currentBranch' matches release branch naming pattern '$pattern'")

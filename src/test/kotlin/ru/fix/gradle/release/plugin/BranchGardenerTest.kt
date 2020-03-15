@@ -137,8 +137,24 @@ class BranchGardenerTest {
         }
     }
 
+
     @Test
-    fun `create release branch`() {
+    fun `create release branch from current branch`() {
+        every { gitRepo.isUncommittedChangesExist() } returns false
+        every { gitRepo.getCurrentBranch() } returns "release/1.2"
+        every { gitRepo.listTags() } returns listOf("1.2.0","1.2.1","1.1.0","1.0.0")
+        userInteractor.addUserAnswer("1.3")
+        every { gitRepo.isLocalBranchExists("release/1.3") } returns false
+        every { gitRepo.createBranch("release/1.3", true) } returns Unit
+
         BranchGardener(project, userInteractor, projectFilesLookup).createReleaseBranch()
+
+        val journal = userInteractor.journal
+        withClue(journal){
+            journal.any { it.contains("Default: 1.3") }.shouldBeTrue()
+            journal.any { it.contains("release/1.3 was successfully created") }.shouldBeTrue()
+            journal.any { it.contains("based on release/1.2") }.shouldBeTrue()
+        }
     }
+
 }

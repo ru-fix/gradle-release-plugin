@@ -2,6 +2,8 @@ object Vers {
     val kotlin = "1.3.61"
     val dokka = "0.9.18"
     val junit = "5.6.0"
+    val sl4j = "1.7.30"
+    val log4j = "2.13.1"
 }
 
 object Libs {
@@ -29,6 +31,10 @@ object Libs {
     val jsch_proxy_jna = "com.jcraft:jsch.agentproxy.usocket-jna:0.0.9"
     val jsch_proxy_sshagent = "com.jcraft:jsch.agentproxy.sshagent:0.0.9"
 
+    val kotlin_logging = "io.github.microutils:kotlin-logging:1.7.8"
+    val slf4j_api = "org.slf4j:slf4j-api:${Vers.sl4j}"
+    val log4j_core = "org.apache.logging.log4j:log4j-core:${Vers.log4j}"
+    val slf4j_over_log4j = "org.apache.logging.log4j:log4j-slf4j-impl:${Vers.log4j}"
 }
 
 

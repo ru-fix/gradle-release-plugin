@@ -1,6 +1,9 @@
 package ru.fix.gradle.release.plugin
 
+import mu.KotlinLogging
 import java.util.concurrent.ConcurrentLinkedDeque
+
+private val log = KotlinLogging.logger {  }
 
 class JournaledTestUserInteractor : UserInteractor {
     private val messages = ConcurrentLinkedDeque<String>()
@@ -18,11 +21,13 @@ class JournaledTestUserInteractor : UserInteractor {
         get() = messages
 
     override fun promptQuestion(prompt: String, default: String?): String {
+        log.info { "promptQuestion: $prompt" }
         messages.addLast(prompt)
         return userAnswers.removeFirst()
     }
 
     override fun promptPassword(prompt: String): CharArray {
+        log.info { "promptPassword: $prompt" }
         messages.addLast(prompt)
         return userAnswers.removeFirst().toCharArray()
     }

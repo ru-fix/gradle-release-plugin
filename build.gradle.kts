@@ -1,12 +1,12 @@
+import de.marcphilipp.gradle.nexus.NexusPublishExtension
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import kotlin.properties.ReadOnlyProperty
-import kotlin.reflect.KProperty
-import de.marcphilipp.gradle.nexus.NexusPublishExtension
 import java.time.Duration
 import java.time.temporal.ChronoUnit
+import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KProperty
 
 buildscript {
 
@@ -90,6 +90,7 @@ dependencies {
     testApi(Libs.junit_api)
     testApi(Libs.mockk)
     testApi(Libs.kotlin_test)
+    testApi(Libs.kotlin_logging)
     testImplementation(Libs.junit_engine)
 }
 

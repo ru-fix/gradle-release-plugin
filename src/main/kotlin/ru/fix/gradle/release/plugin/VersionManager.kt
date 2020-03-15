@@ -19,18 +19,18 @@ class VersionManager(
 
 
     fun supposeBranchVersion(): String {
-        val versions = getExistingVersions()
+        val versions = getExistingVersionsInDescendingOrder()
         return if (versions.isEmpty()) {
             "1.0"
         } else {
-            var version = Version.valueOf(versions[0])
+            var version = Version.valueOf(versions.first())
             version = version.incrementMinorVersion()
             "${version.majorVersion}.${version.minorVersion}"
         }
     }
 
     fun supposeReleaseVersion(majorVersion: String): String {
-        val minorVersions = getExistingVersions()
+        val minorVersions = getExistingVersionsInDescendingOrder()
                 .filter { it.startsWith("$majorVersion.") }
 
         return if (minorVersions.isEmpty()) {
@@ -43,7 +43,7 @@ class VersionManager(
     }
 
     fun branchVersionExists(majorVersion: String): Boolean =
-            getExistingVersions().find { it.startsWith("$majorVersion.") } != null
+            getExistingVersionsInDescendingOrder().find { it.startsWith("$majorVersion.") } != null
 
 
     fun updateVersionInFile(filename: Path, version: String) {
@@ -63,7 +63,7 @@ class VersionManager(
             .matchEntire(name)!!.groups[1]!!.value
 
 
-    private fun getExistingVersions(): List<String> {
+    private fun getExistingVersionsInDescendingOrder(): List<String> {
         return git.listTags()
                 .filter { Regex("(\\d+)\\.(\\d+).(\\d+)").matches(it) }
                 .sortedByDescending { Version.valueOf(it) }

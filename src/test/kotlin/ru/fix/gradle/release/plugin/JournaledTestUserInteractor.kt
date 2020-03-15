@@ -6,8 +6,8 @@ import java.util.concurrent.ConcurrentLinkedDeque
 private val log = KotlinLogging.logger {  }
 
 class JournaledTestUserInteractor : UserInteractor {
-    private val messages = ConcurrentLinkedDeque<String>()
-    private val userAnswers = ConcurrentLinkedDeque<String>()
+    val messages = ConcurrentLinkedDeque<String>()
+    val userAnswers = ConcurrentLinkedDeque<String>()
 
     fun clear() {
         messages.clear()
@@ -16,9 +16,6 @@ class JournaledTestUserInteractor : UserInteractor {
     fun addUserAnswer(answer: String) {
         userAnswers.addLast(answer)
     }
-
-    val journal: ConcurrentLinkedDeque<String>
-        get() = messages
 
     override fun promptQuestion(prompt: String, default: String?): String {
         log.info { "promptQuestion: $prompt" }

@@ -17,7 +17,6 @@ class BranchGardener(
         val git = projectFileSystemLookup.openGitRepository()
 
         val versionManager = VersionManager(git, userInteractor)
-
         if (git.isUncommittedChangesExist()) {
             userInteractor.error("" +
                     "Could not create new release due to uncommitted changes. " +
@@ -121,22 +120,21 @@ class BranchGardener(
 
         val supposedVersion = versionManager.supposeBranchVersion()
 
-
-        var input = userInteractor.promptQuestion(
+        val userVersion = userInteractor.promptQuestion(
                 "Please specify release version in x.y format (Default: $supposedVersion)",
                 supposedVersion)
 
-        if (versionManager.branchVersionExists(input)) {
-            userInteractor.info("Version $input already exists")
+        if (versionManager.branchVersionExists(userVersion)) {
+            userInteractor.info("Version $userVersion already exists")
             return
         }
 
-        if (!versionManager.isValidBranchVersion(input)) {
-            userInteractor.info("Please specify valid version")
+        if (!versionManager.isValidBranchVersion(userVersion)) {
+            userInteractor.info("Please specify valid version in x.y format, current is $userVersion")
             return
         }
 
-        val branch = "${extension.releaseBranchPrefix}$input"
+        val branch = "${extension.releaseBranchPrefix}$userVersion"
 
         if (git.isLocalBranchExists(branch)) {
             userInteractor.info("Branch with name $branch already exists")

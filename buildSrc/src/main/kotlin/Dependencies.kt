@@ -20,9 +20,7 @@ object Libs {
 
     val kotlin_test = "io.kotlintest:kotlintest-runner-junit5:3.4.2"
 
-    //1.9.3 has a bug
-    //https://github.com/mockk/mockk/issues/280
-    val mockk = "io.mockk:mockk:1.9.2"
+    val mockk = "io.mockk:mockk:1.9.3"
 
     val jgit = "org.eclipse.jgit:org.eclipse.jgit:5.6.1.202002131546-r"
 

@@ -152,7 +152,10 @@ Finds latest version among them.
 Calculates new version by incrementing latest tag version by 1.    
 Stores new version in `gradle.properties` file in format `version=x.y.z+1`.     
 Commit `gradle.properties` file with new tag name `x.y.z+1` into repository.  
-User should run createRelease task on one of release branches `release/x.y`.    
+User should run createRelease task on one of release branches `release/x.y`.
+
+![](docs/gradle-release-plugin-release-tag.png?raw=true)
+    
     
 Configuration:
  * releaseBranchPrefix - prefix for release branch name, by default - `/release/`

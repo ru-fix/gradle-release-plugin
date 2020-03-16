@@ -2,8 +2,11 @@
 [![Maven Central](https://img.shields.io/maven-central/v/ru.fix/gradle-release-plugin.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22ru.fix%22)
 
 gradle-release-plugin automates release procedure for gradle based projects.
-It can automatically create new release branch and new release. 
-New release is created by updating version in root `gradle.properties` file by template `version=x.y.z` and commiting this update in distinct revision tagged by auto incremented version number.
+It can automatically create new release branches and tag releases. 
+New release is created by updating version in project root `gradle.properties` file.
+In this file plugin updates `version` property in format `version=x.y.z`.
+Plugin uses auto incremented version number.
+Then commits this update in distinct revision tagged by this version number.
 
 - [Usages](#usages)
   * [Short hints](#short-hints)

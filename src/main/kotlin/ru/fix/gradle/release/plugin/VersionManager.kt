@@ -30,16 +30,21 @@ class VersionManager(
     }
 
     fun supposeReleaseVersion(majorVersion: String): String {
-        val minorVersions = getExistingVersionsInDescendingOrder()
+        val versions = getExistingVersionsInDescendingOrder()
                 .filter { it.startsWith("$majorVersion.") }
 
-        return if (minorVersions.isEmpty()) {
-            "$majorVersion.0"
-        } else {
-            var lastMinor = Version.valueOf(minorVersions[0])
-            lastMinor = lastMinor.incrementPatchVersion()
-            lastMinor.toString()
+        if (versions.isEmpty()) {
+            return "$majorVersion.0"
         }
+        return Version.valueOf(versions.first()).incrementPatchVersion().toString()
+    }
+
+    fun supposeReleaseVersion(): String {
+        val versions = getExistingVersionsInDescendingOrder()
+        if (versions.isEmpty()) {
+            return "1.0.0"
+        }
+        return Version.valueOf(versions.first()).incrementPatchVersion().toString()
     }
 
     fun branchVersionExists(majorVersion: String): Boolean =

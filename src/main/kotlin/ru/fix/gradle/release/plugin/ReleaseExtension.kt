@@ -11,7 +11,7 @@ open class ReleaseExtension {
     var commitMessageTemplate = "Release v{VERSION}"
     var tagNameTemplate = "{VERSION}"
     var templateVersionMarker = "{VERSION}"
-    var nextReleaseDeterminationSchema = ReleaseDetection.MAJOR_MINOR_FROM_BRANCH_NAME_PATCH_FROM_TAG
+    var nextReleaseVersionDeterminationSchema = ReleaseDetection.MAJOR_MINOR_FROM_BRANCH_NAME_PATCH_FROM_TAG
 
     fun commitMessage(version: String) = commitMessageTemplate.replace(templateVersionMarker, version)
     fun tagName(version: String) = tagNameTemplate.replace(templateVersionMarker, version)

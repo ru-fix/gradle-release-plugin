@@ -12,6 +12,7 @@ import io.mockk.verifySequence
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionContainer
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -42,7 +43,7 @@ class BranchGardenerTest {
         mockLogging()
         mockProjectLookup()
         mockAbsentProperties()
-        mockDefaultExtension()
+        mockExtension(ReleaseExtension())
     }
 
     @AfterEach
@@ -62,9 +63,9 @@ class BranchGardenerTest {
         every { projectFilesLookup.openGitRepository() } returns gitRepo
     }
 
-    private fun mockDefaultExtension() {
+    private fun mockExtension(releaseExtension: ReleaseExtension) {
         every { project.extensions } returns extensionContainer
-        every { extensionContainer.findByType(ReleaseExtension::class.java) } returns ReleaseExtension()
+        every { extensionContainer.findByType(ReleaseExtension::class.java) } returns releaseExtension
     }
 
     private fun mockAbsentProperties() {
@@ -99,16 +100,14 @@ class BranchGardenerTest {
         every { gitRepo.fetchTags() } returns Unit
         every { gitRepo.getCurrentBranch() } returns "feature/my-feature-for-1.2"
 
-        BranchGardener(project, userInteractor, projectFilesLookup).createRelease()
+        Assertions.assertThrows(BranchDoesNotMatchReleaseBranchNamingConvention::class.java) {
+            BranchGardener(project, userInteractor, projectFilesLookup).createRelease()
+        }
 
         verifySequence {
             gitRepo.isUncommittedChangesExist()
             gitRepo.fetchTags()
             gitRepo.getCurrentBranch()
-        }
-
-        withClue(userInteractor.messages) {
-            userInteractor.messages.any { it.contains("does not match") }.shouldBeTrue()
         }
     }
 
@@ -161,6 +160,11 @@ class BranchGardenerTest {
         every { gitRepo.checkoutLocalBranch("production") } returns Unit
         every { gitRepo.deleteBranch("temp_gradle_release_plugin/release/1.2.4") } returns Unit
         every { gitRepo.pushTag(any()) } returns Unit
+
+        mockExtension(ReleaseExtension().apply {
+            nextReleaseVersionDeterminationSchema = ReleaseDetection.MAJOR_MINOR_PATCH_FROM_TAG
+        })
+
 
         BranchGardener(project, userInteractor, projectFilesLookup).createRelease()
 

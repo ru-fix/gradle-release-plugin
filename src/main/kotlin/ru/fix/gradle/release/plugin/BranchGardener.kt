@@ -37,41 +37,47 @@ class BranchGardener(
         }
 
         val branch = git.getCurrentBranch()
-        assertCurrentBanchNameIsValid(extension.releaseBranchPrefix, branch)
 
-        val baseVersion = versionManager.extractVersionFromBranch(branch)
+        val version = when (extension.nextReleaseVersionDeterminationSchema) {
+            ReleaseDetection.MAJOR_MINOR_FROM_BRANCH_NAME_PATCH_FROM_TAG -> {
+                assertBranchIsAReleaseBranch(extension.releaseBranchPrefix, branch)
 
-        val version = versionManager.supposeReleaseVersion(baseVersion)
+                val baseVersion = versionManager.extractVersionFromBranch(branch)
+                versionManager.supposeReleaseVersion(baseVersion)
+            }
+            ReleaseDetection.MAJOR_MINOR_PATCH_FROM_TAG -> {
+                versionManager.supposeReleaseVersion()
+            }
+        }
+
 
         userInteractor.info("Creating release for version $version")
 
         val gradlePropertiesFile = projectFileSystemLookup.findGradlePropertiesFile()
 
+
         val tempBranch = "temp_gradle_release_plugin/${extension.releaseBranchPrefix}$version"
 
-        with(git) {
-
-            if (isLocalBranchExists(tempBranch)) {
-                throw GradleException("Temporary branch $tempBranch already exists. Please delete it first")
-            }
-
-            createBranch(tempBranch, true)
-            versionManager.updateVersionInFile(gradlePropertiesFile.toAbsolutePath(), version)
-
-            commitFilesInIndex(extension.commitMessage(version))
-            val tagRef = createTag(extension.tagName(version), extension.commitMessage(version))
-
-            if (project.hasProperty(ProjectProperties.CHECKOUT_TAG) &&
-                    project.property(ProjectProperties.CHECKOUT_TAG).toString().toBoolean()) {
-                checkoutTag(version)
-            } else {
-                checkoutLocalBranch(branch)
-            }
-
-            deleteBranch(tempBranch)
-
-            pushTag(tagRef)
+        if (git.isLocalBranchExists(tempBranch)) {
+            throw GradleException("Temporary branch $tempBranch already exists. Please delete it first")
         }
+
+        git.createBranch(tempBranch, true)
+        versionManager.updateVersionInFile(gradlePropertiesFile.toAbsolutePath(), version)
+
+        git.commitFilesInIndex(extension.commitMessage(version))
+        val tagRef = git.createTag(extension.tagName(version), extension.commitMessage(version))
+
+        if (project.hasProperty(ProjectProperties.CHECKOUT_TAG) &&
+                project.property(ProjectProperties.CHECKOUT_TAG).toString().toBoolean()) {
+            git.checkoutTag(version)
+        } else {
+            git.checkoutLocalBranch(branch)
+        }
+
+        git.deleteBranch(tempBranch)
+
+        git.pushTag(tagRef)
     }
 
     private fun switchToUserDefinedReleaseBranch(releaseBranch: String, git: GitRepository) {
@@ -87,15 +93,15 @@ class BranchGardener(
         }
     }
 
-    private fun assertCurrentBanchNameIsValid(branchPrefix: String, currentBranch: String): Boolean {
+    private fun assertBranchIsAReleaseBranch(branchPrefix: String, currentBranch: String) {
         val pattern = "$branchPrefix(\\d+)\\.(\\d+)"
 
         userInteractor.info("Checking that branch '$currentBranch' matches release branch naming pattern '$pattern'")
         if (!Regex(pattern).matches(currentBranch)) {
-            userInteractor.error("Current branch $currentBranch does not match pattern '$pattern'")
-            return false
+            throw BranchDoesNotMatchReleaseBranchNamingConvention(
+                    "Current branch $currentBranch does not match pattern '$pattern'")
+
         }
-        return true
     }
 
     fun createReleaseBranch() {
@@ -144,3 +150,5 @@ class BranchGardener(
         userInteractor.info("Branch $branch was successfully created based on $currentBranch")
     }
 }
+
+class BranchDoesNotMatchReleaseBranchNamingConvention(message: String) : Exception(message)

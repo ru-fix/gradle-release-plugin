@@ -406,7 +406,7 @@ tag found
 then default `1.0.0` will be used. If tags found then max tag will be incremented, e.g. if plugin find last tag `1.3.7` then new tag name will be `1.3.8`  
 - In file `gradle.properties` `version` property is replaced from `1.3-SNAPSHOT` to `1.3.8`
 - `gradle.properties` is being committed with new tag name `1.3.8`
-- `createRelease` task can only make minor increment. User have to manually create tag `2.0.0` in order to make major version update. Or use can specify major and minor version part explicitly through property `-PreleaseMajorMinorVersion=2.0`
+- `createRelease` task can only make minor increment. User have to manually create tag `2.0.0` in order to make major version update. Or use can specify major and minor version part explicitly through property `-Pru.fix.gradle.release.releaseMajorMinorVersion=2.0`
 ```shell script
-gradle createRlease -PreleaseMajorMinorVersion=2.0
+gradle createRlease -Pru.fix.gradle.release.releaseMajorMinorVersion=2.0
 ```

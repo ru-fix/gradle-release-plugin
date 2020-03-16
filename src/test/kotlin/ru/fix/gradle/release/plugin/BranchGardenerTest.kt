@@ -118,12 +118,12 @@ class BranchGardenerTest {
         every { gitRepo.fetchTags() } returns Unit
         every { gitRepo.getCurrentBranch() } returns "release/1.2"
         every { gitRepo.listTags() } returns listOf("1.2.3")
-        every { gitRepo.isLocalBranchExists("temp_gradle_release_plugin/release/1.2.4") } returns false
-        every { gitRepo.createBranch("temp_gradle_release_plugin/release/1.2.4", true) } returns Unit
+        every { gitRepo.isLocalBranchExists("temp_gradle_release_plugin/1.2.4") } returns false
+        every { gitRepo.createBranch("temp_gradle_release_plugin/1.2.4", true) } returns Unit
         every { gitRepo.commitFilesInIndex("Release v1.2.4") } returns Unit
         every { gitRepo.createTag("1.2.4", "Release v1.2.4") } returns mockk()
         every { gitRepo.checkoutLocalBranch("release/1.2") } returns Unit
-        every { gitRepo.deleteBranch("temp_gradle_release_plugin/release/1.2.4") } returns Unit
+        every { gitRepo.deleteBranch("temp_gradle_release_plugin/1.2.4") } returns Unit
         every { gitRepo.pushTag(any()) } returns Unit
 
         BranchGardener(project, userInteractor, projectFilesLookup).createRelease()
@@ -131,12 +131,12 @@ class BranchGardenerTest {
         verify { gitRepo.isUncommittedChangesExist() }
         verify { gitRepo.fetchTags() }
         verify { gitRepo.getCurrentBranch() }
-        verify { gitRepo.isLocalBranchExists("temp_gradle_release_plugin/release/1.2.4") }
-        verify { gitRepo.createBranch("temp_gradle_release_plugin/release/1.2.4", true) }
+        verify { gitRepo.isLocalBranchExists("temp_gradle_release_plugin/1.2.4") }
+        verify { gitRepo.createBranch("temp_gradle_release_plugin/1.2.4", true) }
         verify { gitRepo.commitFilesInIndex("Release v1.2.4") }
         verify { gitRepo.createTag("1.2.4", "Release v1.2.4") }
         verify { gitRepo.checkoutLocalBranch("release/1.2") }
-        verify { gitRepo.deleteBranch("temp_gradle_release_plugin/release/1.2.4") }
+        verify { gitRepo.deleteBranch("temp_gradle_release_plugin/1.2.4") }
         verify { gitRepo.pushTag(any()) }
 
         withClue(userInteractor.messages) {
@@ -150,12 +150,12 @@ class BranchGardenerTest {
         every { gitRepo.fetchTags() } returns Unit
         every { gitRepo.getCurrentBranch() } returns "production"
         every { gitRepo.listTags() } returns listOf("1.1.7", "1.2.3")
-        every { gitRepo.isLocalBranchExists("temp_gradle_release_plugin/release/1.2.4") } returns false
-        every { gitRepo.createBranch("temp_gradle_release_plugin/release/1.2.4", true) } returns Unit
+        every { gitRepo.isLocalBranchExists("temp_gradle_release_plugin/1.2.4") } returns false
+        every { gitRepo.createBranch("temp_gradle_release_plugin/1.2.4", true) } returns Unit
         every { gitRepo.commitFilesInIndex("Release v1.2.4") } returns Unit
         every { gitRepo.createTag("1.2.4", "Release v1.2.4") } returns mockk()
         every { gitRepo.checkoutLocalBranch("production") } returns Unit
-        every { gitRepo.deleteBranch("temp_gradle_release_plugin/release/1.2.4") } returns Unit
+        every { gitRepo.deleteBranch("temp_gradle_release_plugin/1.2.4") } returns Unit
         every { gitRepo.pushTag(any()) } returns Unit
 
         mockExtension(ReleaseExtension().apply {
@@ -168,12 +168,12 @@ class BranchGardenerTest {
         verify { gitRepo.isUncommittedChangesExist() }
         verify { gitRepo.fetchTags() }
         verify { gitRepo.getCurrentBranch() }
-        verify { gitRepo.isLocalBranchExists("temp_gradle_release_plugin/release/1.2.4") }
-        verify { gitRepo.createBranch("temp_gradle_release_plugin/release/1.2.4", true) }
+        verify { gitRepo.isLocalBranchExists("temp_gradle_release_plugin/1.2.4") }
+        verify { gitRepo.createBranch("temp_gradle_release_plugin/1.2.4", true) }
         verify { gitRepo.commitFilesInIndex("Release v1.2.4") }
         verify { gitRepo.createTag("1.2.4", "Release v1.2.4") }
         verify { gitRepo.checkoutLocalBranch("production") }
-        verify { gitRepo.deleteBranch("temp_gradle_release_plugin/release/1.2.4") }
+        verify { gitRepo.deleteBranch("temp_gradle_release_plugin/1.2.4") }
         verify { gitRepo.pushTag(any()) }
 
         withClue(userInteractor.messages) {

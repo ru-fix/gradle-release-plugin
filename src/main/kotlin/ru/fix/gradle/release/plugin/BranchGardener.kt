@@ -60,7 +60,7 @@ class BranchGardener(
                 fullVersion = if (userDefinedMajorMinorVersion != null)
                     versionManager.supposeReleaseVersion(userDefinedMajorMinorVersion)
                 else
-                    versionManager.supposeBranchVersion()
+                    versionManager.supposeReleaseVersion()
             }
         }
 
@@ -68,7 +68,7 @@ class BranchGardener(
 
         val gradlePropertiesFile = projectFileSystemLookup.findGradlePropertiesFile()
 
-        val tempBranch = "temp_gradle_release_plugin/${extension.releaseBranchPrefix}$fullVersion"
+        val tempBranch = "temp_gradle_release_plugin/$fullVersion"
 
         if (git.isLocalBranchExists(tempBranch)) {
             throw GradleException("Temporary branch $tempBranch already exists. Please delete it first")

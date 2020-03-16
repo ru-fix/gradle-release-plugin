@@ -12,7 +12,7 @@ Then commits this update in distinct revision tagged by this version number.
 - [Short hints](#short-hints)
   * [Publish minor change in release branch with `createRelease` command for project with multiple release branches](#publish-minor-change-in-release-branch-with--createrelease--command-for-project-with-multiple-release-branches)
   * [Publish minor change in release branch with `createRelease` command for project with single release branch](#publish-minor-change-in-release-branch-with--createrelease--command-for-project-with-single-release-branch)
-    + [Publish major change with `createReleaseBranch` command](#publish-major-change-with--createreleasebranch--command)
+  * [Publish major change with `createReleaseBranch` command](#publish-major-change-with--createreleasebranch--command)
 - [Plugin tasks](#plugin-tasks)
   * [createReleaseBranch task](#createreleasebranch-task)
   * [createRelease task](#createrelease-task)
@@ -73,7 +73,7 @@ gradle createRelease
 └ production <-- (current branch)
 ``` 
 
-### Publish major change with `createReleaseBranch` command
+## Publish major change with `createReleaseBranch` command
 Create new major version branch with gradle-release-plugin.
 ```text
 └ release

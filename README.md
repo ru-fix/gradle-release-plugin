@@ -8,11 +8,10 @@ In this file plugin updates `version` property in format `version=x.y.z`.
 Plugin uses auto incremented version number.
 Then commits this update in distinct revision tagged by this version number.
 
-- [Usages](#usages)
-  * [Short hints](#short-hints)
-    + [Minor fix with createRelease](#minor-fix-with-createrelease)
-    + [Major change with createReleaseBranch](#major-change-with-createreleasebranch) 
-  * [Plugin tasks](#plugin-tasks)
+- [Short hints](#short-hints)
+   * [Minor fix with createRelease](#minor-fix-with-createrelease)
+   * [Major change with createReleaseBranch](#major-change-with-createreleasebranch) 
+- [Plugin tasks](#plugin-tasks)
     + [createReleaseBranch](#createreleasebranch)
     + [createRelease](#createrelease)
   * [How to use plugin](#how-to-use-plugin)
@@ -27,28 +26,56 @@ Then commits this update in distinct revision tagged by this version number.
   * [How to build this project](#how-to-build-this-project)
     + [Deploy this project to remote repository](#deploy-this-project-to-remote-repository)
  
-# Usages
+# Short hints
 
-## Short hints
+## Publish minor change in release branch with `createRelease` command for project with multiple release branches
 
-### Minor fix with createRelease
-
-Create and merge minor fix or feature into release branch `release/1.3`.  
+Create and merge minor fix or feature into release branch `release/1.3`.
+```text
+└ master
+└ release
+  └ 1.3 <-- (current branch)
+  └ 1.4
+tag 1.3.0
+tag 1.3.1
+tag 1.4.0
+```
 Now you are ready to create new release with gradle-release-plugin.  
-Last tag was 1.3.5 -> new tag will be 1.3.6  
+Since last tag for 1.3 was 1.3.1, then new tag will be 1.3.2.  
 ```shell script
-git checkout release/1.3 
+git checkout release/1.3
 gradle createRelease
 ```
- Optional manual push:  
- Plugin by default tries to push changes by itself if ssh key or https credentials provided.  
- You have to push new tags manually only if plugin failes to resolve credentials.
-```shell script
-
-git push --tags
+```text
+└ release
+  └ 1.3 <-- (current branch)
+  └ 1.4
+tag 1.3.0
+tag 1.3.1
+tag 1.3.2 (new tag)
+tag 1.4.0
 ```
 
-### Major change with createReleaseBranch
+## Publish minor change in release branch with `createRelease` command for project with single release branch
+
+Create and merge minor fix or feature into release branch `production`.
+```text
+└ production <-- (current branch)
+tag 1.3.0
+tag 1.3.1
+tag 1.4.0
+```
+Now you are ready to create new release with gradle-release-plugin.  
+Since last tag is 1.4.0, then new tag will be 1.4.1.  
+```shell script
+git checkout production
+gradle createRelease
+```
+```text
+└ production <-- (current branch)
+``` 
+
+### Publish major change with createReleaseBranch
 Create new major version branch with gradle-release-plugin, e.g. `release/1.3` -> `release/1.4`
 ```
 git checkout release/1.3 
@@ -154,6 +181,13 @@ tag 1.1.1
 tag 1.1.2
 tag 1.1.3 (* new tag with updated version in gradle.properties file)
 ``` 
+
+ Plugin by default tries to push changes by itself if ssh key or other credentials provided.  
+ You have to push new tags manually only if plugin fails to resolve credentials.
+```shell script
+git push --tags
+```
+
 
 ## How to use plugin
 

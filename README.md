@@ -30,7 +30,7 @@ Then commits this update in distinct revision tagged by this version number.
 
 ## Publish minor change in release branch with `createRelease` command for project with multiple release branches
 
-Create and merge minor fix or feature into release branch `release/1.3`.
+Create and merge minor fix or feature into release branch `release/1.3` with git.
 ```text
 └ master
 └ release
@@ -58,7 +58,7 @@ tag 1.4.0
 
 ## Publish minor change in release branch with `createRelease` command for project with single release branch
 
-Create and merge minor fix or feature into release branch `production`.
+Create and merge minor fix or feature into release branch `production` with git.
 ```text
 └ production <-- (current branch)
 tag 1.3.0
@@ -75,12 +75,21 @@ gradle createRelease
 └ production <-- (current branch)
 ``` 
 
-### Publish major change with createReleaseBranch
-Create new major version branch with gradle-release-plugin, e.g. `release/1.3` -> `release/1.4`
+### Publish major change with `createReleaseBranch` command
+Create new major version branch with gradle-release-plugin.
+```text
+└ release
+  └ 1.3 <-- (current branch)
+```
 ```
 git checkout release/1.3 
 gradle createReleaseBranch
 git push
+```
+```text
+└ release
+  └ 1.3
+  └ 1.4 <-- (current branch)
 ```
 Now you have new branch `release/1.4`.  
 You can create feature branches based on `release/1.4` and start developing new features.

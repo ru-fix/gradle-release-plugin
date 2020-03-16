@@ -137,14 +137,14 @@ gradle createReleaseBranch
 └─feature
   └─my-new-future
 ``` 
-Configuration:
+ReleaseExtension configuration:
   * not required
   
 Optional properties:
  * ru.fix.gradle.release.login: String - login for remote git repository
  * ru.fix.gradle.release.password: String - password for remote git repository
  
-### createRelease task
+## createRelease task
  
 Searches for existing tags in repository. 
 Select tags with names matching version template `x.y.z`.    
@@ -157,7 +157,7 @@ User should run createRelease task on one of release branches `release/x.y`.
 ![](docs/gradle-release-plugin-release-tag.png?raw=true)
     
     
-Configuration:
+ReleaseExtension configuration:
  * releaseBranchPrefix - prefix for release branch name, by default - `/release/`
  * commitMessageTemplate - by default `Release v{VERSION}`
  * tagNameTemplate - by default `{VERSION}`
@@ -206,10 +206,8 @@ git push --tags
 ```
 
 
-## How to use plugin
-
-Add plugin to project gradle build script  
-* Kotiln DSL
+# Add plugin to gradle project build script
+## Kotiln DSL
 ```
 import org.gradle.kotlin.dsl.*
 import ru.fix.gradle.release.plugin.release.ReleaseExtension
@@ -229,7 +227,7 @@ configure<ReleaseExtension> {
     releaseBranchPrefix = "release/"
 }
 ```
-* Groovy DSL
+## Groovy DSL
 ```
 buildscript {
     dependencies {
@@ -250,6 +248,7 @@ apply plugin : "ru.fix.gradle.release"
 }
 ```
 
+# Plugin usage in project with multiple release branches
 
 Manually create branch `/master` with latest version of project.  
 ```
@@ -266,38 +265,43 @@ gradle createReleaseBranch
     └─1.0  <--
 ```  
 This will create new branch `/master` -> `/release/1.0`  
+
 Checkout branch `/release/1.1`  
 Apply changes in your code. 
-Create new tag with updated gradle.properties by running `gradle createRelease`
-```
-gradle createRelease
-
-└─master
-└─release
-  └─1.0
-tag 1.0.1 
-```  
-This will create new tag `1.0.1`
-This tag will contain single change: updated gradle.properties file with content:
-```
-version=1.0.1
-```
-
-Now CI can checkout tag `1.0.1`, build and publish your project `gradle clean build publish`.
-
-You can merge new fixes to `/release/release-1.0` and create new tagged releases:  
-`gradle createRelease` will create new tag `1.0.2`.
+Create new tag with updated gradle.properties by running `gradle createRelease` task.
 ```
 gradle createRelease
 
 └─master
 └─release
   └─1.0 <--
-tag 1.0.1
-tag 1.0.2  
+tag 1.0.0  (new tag)
 ```  
-If you decided to publish new major version based on `/master` branch you can create new release
-branch `gradle createReleaseBranch` and specify version `1.1`.  
+This will create new tag `1.0.0`
+This tag will contain single change: updated gradle.properties file with content:
+```
+version=1.0.0
+```
+
+Now CI can checkout tag `1.0.0`, build and publish your project with `gradle clean build publish` command.
+
+You can merge new changes to `/release/1.0` release branch and create new tagged release that contains this changes:    
+`gradle createRelease` will create new tag `1.0.1`.
+```
+gradle createRelease
+
+└─master
+└─release
+  └─1.0 <--
+tag 1.0.0
+tag 1.0.1 (new tag)  
+```  
+If you decided to publish new major version based on `/master` branch you should:  
+Checkout `/master` branch with git
+```shell script
+git checkout master
+```  
+Then create new release branch with `gradle createReleaseBranch` and specify version `1.1`.  
 This will create new branch `/master` -> `/release/1.1`
 ```
 # ----- before ----- 
@@ -312,8 +316,8 @@ gradle createReleaseBreanch
 └─release
   └─1.0
   └─1.1  <--
+tag 1.0.0
 tag 1.0.1
-tag 1.0.2
 ```  
 
 ## Gradle Release Flow

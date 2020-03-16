@@ -32,10 +32,10 @@ Then commits this update in distinct revision tagged by this version number.
 
 Create and merge minor fix or feature into release branch `release/1.3` with git.
 ```text
-└ master
-└ release
-  └ 1.3 <-- (current branch)
-  └ 1.4
+└─master
+└─release
+  └─1.3 <-- (current branch)
+  └─1.4
 tag 1.3.0
 tag 1.3.1
 tag 1.4.0
@@ -47,9 +47,9 @@ git checkout release/1.3
 gradle createRelease
 ```
 ```text
-└ release
-  └ 1.3 <-- (current branch)
-  └ 1.4
+└─release
+  └─1.3 <-- (current branch)
+  └─1.4
 tag 1.3.0
 tag 1.3.1
 tag 1.3.2 (new tag)
@@ -60,7 +60,7 @@ tag 1.4.0
 
 Create and merge minor fix or feature into release branch `production` with git.
 ```text
-└ production <-- (current branch)
+└─production <-- (current branch)
 tag 1.3.0
 tag 1.3.1
 tag 1.4.0
@@ -320,41 +320,42 @@ tag 1.0.0
 tag 1.0.1
 ```  
 
-## Gradle Release Flow
+# Multiple release branches git flow
 
 ![](docs/gradle-release-plugin.png?raw=true)
 
-### Principles
 - Latest stable functionality is located in `/master` branch
-- New features is located in `/feature/feature-name` branches
+- New features are created in `/feature/feature-name` branches
 - Maintainable releases is located in `/release/x.y` branches
 - Project version is specified in root file `gradle.properties`, field `version=x.y.z`
 - Version in `gradle.properties` file in all branches is committed as `x.y-SNAPSHOT`. 
  This will prevent conflicts during merge requests between feature branches `/feature/*`,
  release branches `/release/x.y` and `/master` branch
 - During release new tag is being created that holds single commit that modifies `gradle.properties` file 
-and specify particular `version=x.y.z` inside the file.
+and specify particular `version=x.y.z` property inside the file.
+Tag name contain release number.
 
-### Release procedure
+
 Suppose that we already have last version of project in `/master` branch, and release `/release/1.2`
 - New branch is created based on `/master`. 
 Branch name is `/release/1.3`. 
 Plugin task `createReleaseBranch` could be used for that purpose.
-- New branch `/release/1.3` is stabilized, and changes is added through Merge Requests.
+- New branch `/release/1.3` is stabilized, changes are added to this branch through Merge Requests.
 - When branch `/release/1.3` is ready, user launches CI build server release task and specify given branch
  `/release/1.3`
 - CI build server task checkout `/release/1.3` branch, then executes gradle command `gradle createRelease`
+- Or user can launch this command manually on local repository.
 - gradle plugin searches in local git repository for all tags that matches `1.3.*` template, if there is no such 
 tag found 
-then default `1.3.1` will be used. Otherwise max tag will be incremented, e.g. if plugin find `1.3.7` then new tag 
+then default `1.3.0` will be used. If tags found then max tag will be incremented, e.g. if plugin find `1.3.7` then new tag 
 name will be `1.3.8`  
-- In file `gradle.properties` `version` property is replaced from `1.y-SNAPSHOT` to `1.3.8`
+- In file `gradle.properties` `version` property is replaced from `1.3-SNAPSHOT` to `1.3.8`
 - `gradle.properties` is being committed with new tag name `1.3.8`
 
-### Masterless branching
+# Masterless git flow
 You can maintain repository without master branch.
-And create new release branches from previous ones.
-For example, with createRelaseBranch you can create release branch based on currently selected branch. 
+And create new release branches from previous release branches.
+For example, with `createReleaseBranch` you can create release branch `release/1.1` based on currently selected branch `release/1.0`. 
 ```
 # ----- before ----- 
 └─release
@@ -367,4 +368,41 @@ gradle createReleaseBreanch
   └─1.0
   └─1.1  <--
 ```  
-Masterless flow works in the same way, the only exception is that you do not need to merge all changes to master branch all the time. 
+Masterless flow works in the same way as multiple release branches git flow. 
+The only exception is that you do not need to merge all changes to master branch all the time. 
+And you do not need to start new release branches from master.
+
+# Single production branch git flow
+```
+# ----- before ----- 
+└─feature
+  └─my-feature
+└─production
+tag 1.0.0
+tag 1.0.1
+```
+- Latest stable functionality is located in `/master` branch
+- New features are created in `/feature/feature-name` branches
+- There is one maintainable release located at `/production` blanche
+- Project version is specified in root file `gradle.properties`, field `version=x.y.z`
+- Version in `gradle.properties` file in all branches is committed as `x.y-SNAPSHOT`. 
+- During release new tag is being created that holds single commit that modifies `gradle.properties` file 
+and specify particular `version=x.y.z` property inside the file.
+Tag name contain release number.
+
+Configure gradle-release-plugin to use single production branch schema. 
+```kotlin
+configure<ReleaseExtension> {
+    nextReleaseVersionDeterminationSchema = MAJOR_MINOR_PATCH_FROM_TAG
+}
+```
+
+Suppose that we already have last version of project in `/production
+- CI build server task checkout `/production` branch, then executes gradle command `gradle createRelease`
+- Or user can launch this command manually on local repository.
+- gradle plugin searches in local git repository for all tags that matches `*.*.*` template, if there is no such 
+tag found 
+then default `1.0.0` will be used. If tags found then max tag will be incremented, e.g. if plugin find last tag `1.3.7` then new tag name will be `1.3.8`  
+- In file `gradle.properties` `version` property is replaced from `1.3-SNAPSHOT` to `1.3.8`
+- `gradle.properties` is being committed with new tag name `1.3.8`
+- `createRelease`

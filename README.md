@@ -171,7 +171,8 @@ Optional properties:
  * ru.fix.gradle.release.checkoutTag: Boolean - whether to left repository with checkouted tag or with checkouted release branch. 
  Useful for pipelines. 
  By default createRelease will left repository pointing to release branch.
- * ru.fix.gradle.release.releaseBranch: String - which branch to select for release. E.g. `release/1.2` specify that release should be created based on `release/1.2` branch. By default current branch will be used in order to create release.  
+ * ru.fix.gradle.release.releaseMajorMinorVersion: String - which Major and Minor version to select for release. E.g. `1.2` specify that release should be created based on `release/1.2` branch. In case of nextReleaseVersionDeterminationSchema MAJOR_MINOR_PATCH_FROM_TAG then current branch will be used, plugin will use Major and Minor version part from given property and Patch version part will calculate based on existing tags. 
+  By default current branch will be used in order to create release.  
 
 ```
 # ----- before -----
@@ -405,4 +406,7 @@ tag found
 then default `1.0.0` will be used. If tags found then max tag will be incremented, e.g. if plugin find last tag `1.3.7` then new tag name will be `1.3.8`  
 - In file `gradle.properties` `version` property is replaced from `1.3-SNAPSHOT` to `1.3.8`
 - `gradle.properties` is being committed with new tag name `1.3.8`
-- `createRelease`
+- `createRelease` task can only make minor increment. User have to manually create tag `2.0.0` in order to make major version update. Or use can specify major and minor version part explicitly through property `-PreleaseMajorMinorVersion=2.0`
+```shell script
+gradle createRlease -PreleaseMajorMinorVersion=2.0
+```

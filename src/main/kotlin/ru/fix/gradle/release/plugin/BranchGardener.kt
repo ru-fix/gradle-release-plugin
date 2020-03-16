@@ -30,47 +30,59 @@ class BranchGardener(
         checkNotNull(extension) { "Failed to find ReleaseExtension" }
 
         // by default current branch is used as release branch
-        // but user can specify explicitly which branch to use to create release
-        if (project.hasProperty(ProjectProperties.RELEASE_BRANCH)) {
-            val releaseBranch = project.property(ProjectProperties.RELEASE_BRANCH).toString()
-            switchToUserDefinedReleaseBranch(releaseBranch, git)
-        }
+        // but user can specify explicitly which major and minor version to use to create release
+        val userDefinedMajorMinorVersion: String? =
+                if (project.hasProperty(ProjectProperties.RELEASE_MAJOR_MINOR_VERSION)) {
+                    val majorMinorVersion = project.property(ProjectProperties.RELEASE_MAJOR_MINOR_VERSION).toString()
+                    versionManager.assertValidMajorMinorVersion(majorMinorVersion)
+                    majorMinorVersion
+                } else {
+                    null
+                }
 
-        val branch = git.getCurrentBranch()
+        val branch: String
+        val fullVersion: String
 
-        val version = when (extension.nextReleaseVersionDeterminationSchema) {
+        when (extension.nextReleaseVersionDeterminationSchema) {
             ReleaseDetection.MAJOR_MINOR_FROM_BRANCH_NAME_PATCH_FROM_TAG -> {
+                if (userDefinedMajorMinorVersion != null) {
+                    switchToUserDefinedReleaseBranch(extension.releaseBranchPrefix + userDefinedMajorMinorVersion, git)
+                }
+                branch = git.getCurrentBranch()
+
                 assertBranchIsAReleaseBranch(extension.releaseBranchPrefix, branch)
 
-                val baseVersion = versionManager.extractVersionFromBranch(branch)
-                versionManager.supposeReleaseVersion(baseVersion)
+                val majorMinorVersionFromBranch = versionManager.extractVersionFromBranch(branch)
+                fullVersion = versionManager.supposeReleaseVersion(majorMinorVersionFromBranch)
             }
             ReleaseDetection.MAJOR_MINOR_PATCH_FROM_TAG -> {
-                versionManager.supposeReleaseVersion()
+                branch = git.getCurrentBranch()
+                fullVersion = if (userDefinedMajorMinorVersion != null)
+                    versionManager.supposeReleaseVersion(userDefinedMajorMinorVersion)
+                else
+                    versionManager.supposeBranchVersion()
             }
         }
 
-
-        userInteractor.info("Creating release for version $version")
+        userInteractor.info("Creating release for version $fullVersion")
 
         val gradlePropertiesFile = projectFileSystemLookup.findGradlePropertiesFile()
 
-
-        val tempBranch = "temp_gradle_release_plugin/${extension.releaseBranchPrefix}$version"
+        val tempBranch = "temp_gradle_release_plugin/${extension.releaseBranchPrefix}$fullVersion"
 
         if (git.isLocalBranchExists(tempBranch)) {
             throw GradleException("Temporary branch $tempBranch already exists. Please delete it first")
         }
 
         git.createBranch(tempBranch, true)
-        versionManager.updateVersionInFile(gradlePropertiesFile.toAbsolutePath(), version)
+        versionManager.updateVersionInFile(gradlePropertiesFile.toAbsolutePath(), fullVersion)
 
-        git.commitFilesInIndex(extension.commitMessage(version))
-        val tagRef = git.createTag(extension.tagName(version), extension.commitMessage(version))
+        git.commitFilesInIndex(extension.commitMessage(fullVersion))
+        val tagRef = git.createTag(extension.tagName(fullVersion), extension.commitMessage(fullVersion))
 
         if (project.hasProperty(ProjectProperties.CHECKOUT_TAG) &&
                 project.property(ProjectProperties.CHECKOUT_TAG).toString().toBoolean()) {
-            git.checkoutTag(version)
+            git.checkoutTag(fullVersion)
         } else {
             git.checkoutLocalBranch(branch)
         }
@@ -133,10 +145,7 @@ class BranchGardener(
             return
         }
 
-        if (!versionManager.isValidBranchVersion(userVersion)) {
-            userInteractor.info("Please specify valid version in x.y format, current is $userVersion")
-            return
-        }
+        versionManager.assertValidMajorMinorVersion(userVersion)
 
         val branch = "${extension.releaseBranchPrefix}$userVersion"
 

@@ -71,7 +71,7 @@ class BranchGardenerTest {
     private fun mockAbsentProperties() {
         every { project.hasProperty(ProjectProperties.GIT_LOGIN) } returns false
         every { project.hasProperty(ProjectProperties.GIT_PASSWORD) } returns false
-        every { project.hasProperty(ProjectProperties.RELEASE_BRANCH) } returns false
+        every { project.hasProperty(ProjectProperties.RELEASE_MAJOR_MINOR_VERSION) } returns false
         every { project.hasProperty(ProjectProperties.CHECKOUT_TAG) } returns false
     }
 

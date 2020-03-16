@@ -6,15 +6,18 @@ import java.io.FileOutputStream
 import java.nio.file.Path
 import java.util.*
 
+class InvalidMajorMinorVersion(givenVersion: String): Exception("Please specify valid version in x.y format, current is $givenVersion")
 
 class VersionManager(
         private val git: GitRepository,
         private val userInteractor: UserInteractor) {
 
-    fun isValidBranchVersion(version: String): Boolean {
+    fun assertValidMajorMinorVersion(version: String){
         val pattern = "(\\d+)\\.(\\d+)"
         userInteractor.info("Checking that version '$version' matches pattern '$pattern'")
-        return Regex(pattern).matches(version)
+        if(!Regex(pattern).matches(version)){
+            throw InvalidMajorMinorVersion(version)
+        }
     }
 
 

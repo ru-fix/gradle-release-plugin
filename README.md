@@ -94,11 +94,11 @@ git push
 Now you have new branch `release/1.4`.  
 You can create feature branches based on `release/1.4` and start developing new features.
 
-## Plugin tasks
+# Plugin tasks
 
-All plugin tasks works with git repository.  
+All plugin tasks work with git repository.  
 In order to ensure actual state of local repository they try to fetch data from remote repository.
-If remote repository requires credentials, plugin task will try to resolve them.  
+If remote repository requires authentication, plugin tasks will try to resolve credentials.  
 User can provide credentials via:
  * gradle properties:   
     `-Pru.fix.gradle.release.login=<git.login>`     
@@ -106,18 +106,16 @@ User can provide credentials via:
  * system properties:  
   `-Dru.fix.gradle.release.login=<git.login>`  
   `-Dru.fix.gradle.release.password=<git.password>`
+ * ssh key in user home directory
+ * If plugin could not authenticate via properties or ssh key it will prompt user for login and password in interactive mode via console.
   
-If plugin task could not resolve credentials or ssh key it will prompt user for them in console. 
+## createReleaseBranch task
 
-
-![](docs/gradle-release-plugin.png?raw=true)
-
-### createReleaseBranch
 Creates new branch in local git repository.   
-By default current branch will be used as a base branch and target branch name will use format `/release/x.y`.   
-During execution command asks user to specify major and minor version in `x.y` format.
+By default current branch will be used as a base branch and target branch name will be in format `/release/x.y`.   
+During execution, command asks user to specify major and minor version in `x.y` format.
 Plugin will look for existing release branches and suggest user a new version by default. 
- 
+
 ```
 # ----- before -----
 └─master  <-- current branch
@@ -144,19 +142,25 @@ Configuration:
   
 Optional properties:
  * ru.fix.gradle.release.login: String - login for remote git repository
- * ru.fix.gradle.release.password: String - password for remote git repository 
+ * ru.fix.gradle.release.password: String - password for remote git repository
  
-### createRelease 
+### createRelease task
+ 
 Searches for existing tags in repository. 
 Select tags with names matching version template `x.y.z`.    
 Finds latest version among them.    
-Calculates new version by incrementing latest version by 1.    
+Calculates new version by incrementing latest tag version by 1.    
 Stores new version in `gradle.properties` file in format `version=x.y.z+1`.     
 Commit `gradle.properties` file with new tag name `x.y.z+1` into repository.  
 User should run createRelease task on one of release branches `release/x.y`.    
     
 Configuration:
- * releaseBranchPrefix: String - prefix for release branch, by default - `/release/`
+ * releaseBranchPrefix - prefix for release branch name, by default - `/release/`
+ * commitMessageTemplate - by default `Release v{VERSION}`
+ * tagNameTemplate - by default `{VERSION}`
+ * templateVersionMarker - by default `{VERSION}`
+ * nextReleaseVersionDeterminationSchema - by default MAJOR_MINOR_FROM_BRANCH_NAME_PATCH_FROM_TAG.   
+ Other possible option MAJOR_MINOR_PATCH_FROM_TAG
  
 Optional properties:
  * ru.fix.gradle.release.login: String - login for remote git repository
@@ -164,20 +168,20 @@ Optional properties:
  * ru.fix.gradle.release.checkoutTag: Boolean - whether to left repository with checkouted tag or with checkouted release branch. 
  Useful for pipelines. 
  By default createRelease will left repository pointing to release branch.
- * ru.fix.gradle.release.releaseBranchVersion: String - which branch to select for release in x.y format. E.g. 1.2 specify that release should be created based on release/1.2 branch. By default current branch will be used.  
+ * ru.fix.gradle.release.releaseBranch: String - which branch to select for release. E.g. `release/1.2` specify that release should be created based on `release/1.2` branch. By default current branch will be used in order to create release.  
 
 ```
 # ----- before -----
-└─master  <-- current branch
+└─master
 └─release
   └─1.0
-  └─1.1
-tag 1.0.1
+  └─1.1 <-- current branch
+  └─2.0
+tag 1.0.0
+tag 1.1.0
 tag 1.1.1
-tag 1.1.2
-tag 1.1.3
+tag 2.0.0
 
-git checkout -b release/1.1 
 gradle createRelease
 
 # ----- after -----
@@ -185,14 +189,15 @@ gradle createRelease
 └─release
   └─1.0
   └─1.1  <-- current branch
-tag 1.0.1
+  └─2.0
+tag 1.0.0
+tag 1.1.0
 tag 1.1.1
-tag 1.1.2
-tag 1.1.3 (* new tag with updated version in gradle.properties file)
+tag 1.1.2 (new tag with updated version in gradle.properties file)
+tag 2.0.0
 ``` 
-
- Plugin by default tries to push changes by itself if ssh key or other credentials provided.  
- You have to push new tags manually only if plugin fails to resolve credentials.
+Plugin by default tries to push changes by itself if ssh key or other credentials provided.  
+You have to push new tags manually only if plugin fails to resolve credentials.
 ```shell script
 git push --tags
 ```
@@ -309,6 +314,9 @@ tag 1.0.2
 ```  
 
 ## Gradle Release Flow
+
+![](docs/gradle-release-plugin.png?raw=true)
+
 ### Principles
 - Latest stable functionality is located in `/master` branch
 - New features is located in `/feature/feature-name` branches

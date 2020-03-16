@@ -39,8 +39,8 @@ class GitRepositoryManualTest {
 
     @BeforeEach
     fun beforeEach(){
-        every { project.hasProperty(ProjectProperties.GIT_LOGIN) } returns false
-        every { project.hasProperty(ProjectProperties.GIT_PASSWORD) } returns false
+        every { project.hasProperty(PluginProperties.GIT_LOGIN) } returns false
+        every { project.hasProperty(PluginProperties.GIT_PASSWORD) } returns false
     }
 
     fun withRepository(block: (GitRepository) -> Unit) =

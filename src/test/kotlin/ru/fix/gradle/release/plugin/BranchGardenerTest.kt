@@ -69,10 +69,10 @@ class BranchGardenerTest {
     }
 
     private fun mockAbsentProperties() {
-        every { project.hasProperty(ProjectProperties.GIT_LOGIN) } returns false
-        every { project.hasProperty(ProjectProperties.GIT_PASSWORD) } returns false
-        every { project.hasProperty(ProjectProperties.RELEASE_MAJOR_MINOR_VERSION) } returns false
-        every { project.hasProperty(ProjectProperties.CHECKOUT_TAG) } returns false
+        every { project.hasProperty(PluginProperties.GIT_LOGIN) } returns false
+        every { project.hasProperty(PluginProperties.GIT_PASSWORD) } returns false
+        every { project.hasProperty(PluginProperties.RELEASE_MAJOR_MINOR_VERSION) } returns false
+        every { project.hasProperty(PluginProperties.CHECKOUT_TAG) } returns false
     }
 
     private fun mockLogging() {
@@ -180,6 +180,45 @@ class BranchGardenerTest {
             userInteractor.messages.any { it.contains("version 1.2.4") }.shouldBeTrue()
         }
     }
+
+    @Test
+    fun `create release for single release branch project with explicit major minor version`() {
+        every { gitRepo.isUncommittedChangesExist() } returns false
+        every { gitRepo.fetchTags() } returns Unit
+        every { gitRepo.getCurrentBranch() } returns "production"
+        every { gitRepo.listTags() } returns listOf("1.1.7", "1.2.3")
+        every { gitRepo.isLocalBranchExists("temp_gradle_release_plugin/1.3.0") } returns false
+        every { gitRepo.createBranch("temp_gradle_release_plugin/1.3.0", true) } returns Unit
+        every { gitRepo.commitFilesInIndex("Release v1.3.0") } returns Unit
+        every { gitRepo.createTag("1.3.0", "Release v1.3.0") } returns mockk()
+        every { gitRepo.checkoutLocalBranch("production") } returns Unit
+        every { gitRepo.deleteBranch("temp_gradle_release_plugin/1.3.0") } returns Unit
+        every { gitRepo.pushTag(any()) } returns Unit
+
+        mockExtension(ReleaseExtension().apply {
+            nextReleaseVersionDeterminationSchema = ReleaseDetection.MAJOR_MINOR_PATCH_FROM_TAG
+        })
+
+        mockProperty("ru.fix.gradle.release.releaseMajorMinorVersion", "1.3")
+
+        BranchGardener(project, userInteractor, projectFilesLookup).createRelease()
+
+        verify { gitRepo.isUncommittedChangesExist() }
+        verify { gitRepo.fetchTags() }
+        verify { gitRepo.getCurrentBranch() }
+        verify { gitRepo.isLocalBranchExists("temp_gradle_release_plugin/1.3.0") }
+        verify { gitRepo.createBranch("temp_gradle_release_plugin/1.3.0", true) }
+        verify { gitRepo.commitFilesInIndex("Release v1.3.0") }
+        verify { gitRepo.createTag("1.3.0", "Release v1.3.0") }
+        verify { gitRepo.checkoutLocalBranch("production") }
+        verify { gitRepo.deleteBranch("temp_gradle_release_plugin/1.3.0") }
+        verify { gitRepo.pushTag(any()) }
+
+        withClue(userInteractor.messages) {
+            userInteractor.messages.any { it.contains("version 1.3.0") }.shouldBeTrue()
+        }
+    }
+
 
     private fun mockProperty(name: String, value: Any) {
         every { project.hasProperty(name) } returns true

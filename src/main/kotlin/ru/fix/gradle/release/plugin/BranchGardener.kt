@@ -32,8 +32,8 @@ class BranchGardener(
         // by default current branch is used as release branch
         // but user can specify explicitly which major and minor version to use to create release
         val userDefinedMajorMinorVersion: String? =
-                if (project.hasProperty(ProjectProperties.RELEASE_MAJOR_MINOR_VERSION)) {
-                    val majorMinorVersion = project.property(ProjectProperties.RELEASE_MAJOR_MINOR_VERSION).toString()
+                if (project.hasProperty(PluginProperties.RELEASE_MAJOR_MINOR_VERSION)) {
+                    val majorMinorVersion = project.property(PluginProperties.RELEASE_MAJOR_MINOR_VERSION).toString()
                     versionManager.assertValidMajorMinorVersion(majorMinorVersion)
                     majorMinorVersion
                 } else {
@@ -80,8 +80,8 @@ class BranchGardener(
         git.commitFilesInIndex(extension.commitMessage(fullVersion))
         val tagRef = git.createTag(extension.tagName(fullVersion), extension.commitMessage(fullVersion))
 
-        if (project.hasProperty(ProjectProperties.CHECKOUT_TAG) &&
-                project.property(ProjectProperties.CHECKOUT_TAG).toString().toBoolean()) {
+        if (project.hasProperty(PluginProperties.CHECKOUT_TAG) &&
+                project.property(PluginProperties.CHECKOUT_TAG).toString().toBoolean()) {
             git.checkoutTag(fullVersion)
         } else {
             git.checkoutLocalBranch(branch)

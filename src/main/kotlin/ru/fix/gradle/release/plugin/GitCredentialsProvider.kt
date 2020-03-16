@@ -19,14 +19,14 @@ class GitCredentialsProvider(
     }
 
     fun resolveLogin(): String {
-        project.logger.lifecycle("Looking for gradle/system property ${ProjectProperties.GIT_LOGIN}")
-        if (project.hasProperty(ProjectProperties.GIT_LOGIN)) {
-            val propertyLogin = project.property(ProjectProperties.GIT_LOGIN).toString()
+        project.logger.lifecycle("Looking for gradle/system property ${PluginProperties.GIT_LOGIN}")
+        if (project.hasProperty(PluginProperties.GIT_LOGIN)) {
+            val propertyLogin = project.property(PluginProperties.GIT_LOGIN).toString()
             if (propertyLogin.isNotEmpty()) {
                 return propertyLogin
             }
         }
-        val systemPropertyLogin = System.getProperty(ProjectProperties.GIT_LOGIN)
+        val systemPropertyLogin = System.getProperty(PluginProperties.GIT_LOGIN)
         if (systemPropertyLogin != null && systemPropertyLogin.isNotEmpty()) {
             return systemPropertyLogin
         }
@@ -34,14 +34,14 @@ class GitCredentialsProvider(
     }
 
     fun resolvePassword(): CharArray {
-        project.logger.lifecycle("Looking for gradle/system property ${ProjectProperties.GIT_PASSWORD}")
-        if (project.hasProperty(ProjectProperties.GIT_PASSWORD)) {
-            val propertyPassword = project.property(ProjectProperties.GIT_PASSWORD).toString()
+        project.logger.lifecycle("Looking for gradle/system property ${PluginProperties.GIT_PASSWORD}")
+        if (project.hasProperty(PluginProperties.GIT_PASSWORD)) {
+            val propertyPassword = project.property(PluginProperties.GIT_PASSWORD).toString()
             if (propertyPassword.isNotEmpty()) {
                 return propertyPassword.toCharArray()
             }
         }
-        val systemPropertyPassword = System.getProperty(ProjectProperties.GIT_PASSWORD)
+        val systemPropertyPassword = System.getProperty(PluginProperties.GIT_PASSWORD)
         if (systemPropertyPassword != null && systemPropertyPassword.isNotEmpty()) {
             return systemPropertyPassword.toCharArray()
         }

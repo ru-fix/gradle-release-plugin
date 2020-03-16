@@ -128,19 +128,16 @@ class BranchGardenerTest {
 
         BranchGardener(project, userInteractor, projectFilesLookup).createRelease()
 
-        verifySequence {
-            gitRepo.isUncommittedChangesExist()
-            gitRepo.fetchTags()
-            gitRepo.getCurrentBranch()
-            gitRepo.listTags()
-            gitRepo.isLocalBranchExists("temp_gradle_release_plugin/release/1.2.4")
-            gitRepo.createBranch("temp_gradle_release_plugin/release/1.2.4", true)
-            gitRepo.commitFilesInIndex("Release v1.2.4")
-            gitRepo.createTag("1.2.4", "Release v1.2.4")
-            gitRepo.checkoutLocalBranch("release/1.2")
-            gitRepo.deleteBranch("temp_gradle_release_plugin/release/1.2.4")
-            gitRepo.pushTag(any())
-        }
+        verify { gitRepo.isUncommittedChangesExist() }
+        verify { gitRepo.fetchTags() }
+        verify { gitRepo.getCurrentBranch() }
+        verify { gitRepo.isLocalBranchExists("temp_gradle_release_plugin/release/1.2.4") }
+        verify { gitRepo.createBranch("temp_gradle_release_plugin/release/1.2.4", true) }
+        verify { gitRepo.commitFilesInIndex("Release v1.2.4") }
+        verify { gitRepo.createTag("1.2.4", "Release v1.2.4") }
+        verify { gitRepo.checkoutLocalBranch("release/1.2") }
+        verify { gitRepo.deleteBranch("temp_gradle_release_plugin/release/1.2.4") }
+        verify { gitRepo.pushTag(any()) }
 
         withClue(userInteractor.messages) {
             userInteractor.messages.any { it.contains("version 1.2.4") }.shouldBeTrue()
@@ -168,19 +165,16 @@ class BranchGardenerTest {
 
         BranchGardener(project, userInteractor, projectFilesLookup).createRelease()
 
-        verifySequence {
-            gitRepo.isUncommittedChangesExist()
-            gitRepo.fetchTags()
-            gitRepo.getCurrentBranch()
-            gitRepo.listTags()
-            gitRepo.isLocalBranchExists("temp_gradle_release_plugin/release/1.2.4")
-            gitRepo.createBranch("temp_gradle_release_plugin/release/1.2.4", true)
-            gitRepo.commitFilesInIndex("Release v1.2.4")
-            gitRepo.createTag("1.2.4", "Release v1.2.4")
-            gitRepo.checkoutLocalBranch("production")
-            gitRepo.deleteBranch("temp_gradle_release_plugin/release/1.2.4")
-            gitRepo.pushTag(any())
-        }
+        verify { gitRepo.isUncommittedChangesExist() }
+        verify { gitRepo.fetchTags() }
+        verify { gitRepo.getCurrentBranch() }
+        verify { gitRepo.isLocalBranchExists("temp_gradle_release_plugin/release/1.2.4") }
+        verify { gitRepo.createBranch("temp_gradle_release_plugin/release/1.2.4", true) }
+        verify { gitRepo.commitFilesInIndex("Release v1.2.4") }
+        verify { gitRepo.createTag("1.2.4", "Release v1.2.4") }
+        verify { gitRepo.checkoutLocalBranch("production") }
+        verify { gitRepo.deleteBranch("temp_gradle_release_plugin/release/1.2.4") }
+        verify { gitRepo.pushTag(any()) }
 
         withClue(userInteractor.messages) {
             userInteractor.messages.any { it.contains("version 1.2.4") }.shouldBeTrue()
@@ -198,9 +192,7 @@ class BranchGardenerTest {
 
         BranchGardener(project, userInteractor, projectFilesLookup).createReleaseBranch()
 
-        verifySequence {
-            gitRepo.isUncommittedChangesExist()
-        }
+        verify { gitRepo.isUncommittedChangesExist() }
 
         withClue(userInteractor.messages) {
             userInteractor.messages.any { it.contains("uncommitted changes") }.shouldBeTrue()

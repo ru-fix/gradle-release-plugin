@@ -321,7 +321,7 @@ tag 1.0.1
 
 # Multiple release branches git flow
 
-![](docs/gradle-release-plugin.png?raw=true)
+![](docs/gradle-release-plugin-common.png?raw=true)
 
 - Latest stable functionality is located in `/master` branch
 - New features are created in `/feature/feature-name` branches

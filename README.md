@@ -8,23 +8,21 @@ In this file plugin updates `version` property in format `version=x.y.z`.
 Plugin uses auto incremented version number.
 Then commits this update in distinct revision tagged by this version number.
 
+- [Gradle Release Plugin](#gradle-release-plugin)
 - [Short hints](#short-hints)
-   * [Minor fix with createRelease](#minor-fix-with-createrelease)
-   * [Major change with createReleaseBranch](#major-change-with-createreleasebranch) 
+  * [Publish minor change in release branch with `createRelease` command for project with multiple release branches](#publish-minor-change-in-release-branch-with--createrelease--command-for-project-with-multiple-release-branches)
+  * [Publish minor change in release branch with `createRelease` command for project with single release branch](#publish-minor-change-in-release-branch-with--createrelease--command-for-project-with-single-release-branch)
+    + [Publish major change with `createReleaseBranch` command](#publish-major-change-with--createreleasebranch--command)
 - [Plugin tasks](#plugin-tasks)
-    + [createReleaseBranch](#createreleasebranch)
-    + [createRelease](#createrelease)
-  * [How to use plugin](#how-to-use-plugin)
-  * [Gradle Release Flow](#gradle-release-flow)
-    + [Principles](#principles)
-    + [Release procedure](#release-procedure)
-    + [Masterless branching](#masterless-branching)
-- [New Project template](#new-project-template)
-  * [Travis and Maven Central](#travis-and-maven-central)
-  * [Generate .travis.yml](#generate-travisyml)
-- [Gradle Release Plugin project details](#gradle-release-plugin-project-details)
-  * [How to build this project](#how-to-build-this-project)
-    + [Deploy this project to remote repository](#deploy-this-project-to-remote-repository)
+  * [createReleaseBranch task](#createreleasebranch-task)
+  * [createRelease task](#createrelease-task)
+- [Add plugin to gradle project build script](#add-plugin-to-gradle-project-build-script)
+  * [Kotiln DSL](#kotiln-dsl)
+  * [Groovy DSL](#groovy-dsl)
+- [Plugin usage in project with multiple release branches](#plugin-usage-in-project-with-multiple-release-branches)
+- [Multiple release branches git flow](#multiple-release-branches-git-flow)
+- [Masterless git flow](#masterless-git-flow)
+- [Single production branch git flow](#single-production-branch-git-flow)
  
 # Short hints
 

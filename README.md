@@ -23,6 +23,7 @@ Then commits this update in distinct revision tagged by this version number.
 - [Multiple release branches git flow](#multiple-release-branches-git-flow)
 - [Masterless git flow](#masterless-git-flow)
 - [Single production branch git flow](#single-production-branch-git-flow)
+- [Well known issues](#well-khown-issues)
  
 # Short hints
 
@@ -408,3 +409,9 @@ then default `1.0.0` will be used. If tags found then max tag will be incremente
 ```shell script
 gradle createRlease -Pru.fix.gradle.release.releaseMajorMinorVersion=2.0
 ```
+
+# Well known issues
+
+* If you use ssh authentication and received **Auth fail** exception, then this may be due to the fact that your ssh key is not added to the ssh-agent.
+To add a key to a ssh agent in Linux, use the **ssh-add** command.
+

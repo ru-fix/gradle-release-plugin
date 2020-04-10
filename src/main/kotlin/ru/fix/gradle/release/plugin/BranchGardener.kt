@@ -2,6 +2,7 @@ package ru.fix.gradle.release.plugin
 
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import ru.fix.gradle.release.plugin.PluginProperties.CREATE_DEFAULT_RELEASE_BRANCH
 
 
 class BranchGardener(
@@ -136,9 +137,15 @@ class BranchGardener(
 
         val supposedVersion = versionManager.supposeBranchVersion()
 
-        val userVersion = userInteractor.promptQuestion(
-                "Please specify release version in x.y format (Default: $supposedVersion)",
-                supposedVersion)
+        val userVersion = if (
+                project.hasProperty(CREATE_DEFAULT_RELEASE_BRANCH) &&
+                project.property(CREATE_DEFAULT_RELEASE_BRANCH).toString().toBoolean()) {
+            supposedVersion
+        } else {
+            userInteractor.promptQuestion(
+                    "Please specify release version in x.y format (Default: $supposedVersion)",
+                    supposedVersion)
+        }
 
         if (versionManager.branchVersionExists(userVersion)) {
             userInteractor.info("Version $userVersion already exists")

@@ -73,6 +73,7 @@ class BranchGardenerTest {
         every { project.hasProperty(PluginProperties.GIT_PASSWORD) } returns false
         every { project.hasProperty(PluginProperties.RELEASE_MAJOR_MINOR_VERSION) } returns false
         every { project.hasProperty(PluginProperties.CHECKOUT_TAG) } returns false
+        every { project.hasProperty(PluginProperties.CREATE_DEFAULT_RELEASE_BRANCH) } returns false
     }
 
     private fun mockLogging() {
@@ -240,7 +241,7 @@ class BranchGardenerTest {
 
 
     @Test
-    fun `create release branch from current branch`() {
+    fun `create release branch from current branch with user prompt`() {
         every { gitRepo.isUncommittedChangesExist() } returns false
         every { gitRepo.getCurrentBranch() } returns "release/1.2"
         every { gitRepo.listTags() } returns listOf("1.2.0", "1.2.1", "1.1.0", "1.0.0")
@@ -261,6 +262,35 @@ class BranchGardenerTest {
         val messages = userInteractor.messages
         withClue(messages) {
             messages.any { it.contains("Default: 1.3") }.shouldBeTrue()
+            messages.any { it.contains("release/1.3 was successfully created") }.shouldBeTrue()
+            messages.any { it.contains("based on release/1.2") }.shouldBeTrue()
+        }
+    }
+
+    @Test
+    fun `create release branch from current branch without user prompt`() {
+        every { project.hasProperty(PluginProperties.CREATE_DEFAULT_RELEASE_BRANCH) } returns true
+        every { project.property(PluginProperties.CREATE_DEFAULT_RELEASE_BRANCH) } returns "true"
+
+        every { gitRepo.isUncommittedChangesExist() } returns false
+        every { gitRepo.getCurrentBranch() } returns "release/1.2"
+        every { gitRepo.listTags() } returns listOf("1.2.0", "1.2.1", "1.1.0", "1.0.0")
+
+        every { gitRepo.isLocalBranchExists("release/1.3") } returns false
+        every { gitRepo.createBranch("release/1.3", true) } returns Unit
+
+        BranchGardener(project, userInteractor, projectFilesLookup).createReleaseBranch()
+
+        verify { gitRepo.isUncommittedChangesExist() }
+        verify { gitRepo.getCurrentBranch() }
+        verify { gitRepo.listTags() }
+        verify { gitRepo.isLocalBranchExists("release/1.3") }
+        verify { gitRepo.createBranch("release/1.3", true) }
+
+        userInteractor.userAnswers.size.shouldBe(0)
+
+        val messages = userInteractor.messages
+        withClue(messages) {
             messages.any { it.contains("release/1.3 was successfully created") }.shouldBeTrue()
             messages.any { it.contains("based on release/1.2") }.shouldBeTrue()
         }

@@ -142,6 +142,7 @@ ReleaseExtension configuration:
 Optional properties:
  * ru.fix.gradle.release.login: String - login for remote git repository
  * ru.fix.gradle.release.password: String - password for remote git repository
+ * ru.fix.gradle.release.createDefaultReleaseBranch: Boolean - if true, then createReleaseBranch will work in non interactive mode and will use major version suggested by default without asking user for confirmation. Used in CI. By default is false.
  
 ## createRelease task
  

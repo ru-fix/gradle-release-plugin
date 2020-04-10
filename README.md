@@ -411,11 +411,11 @@ gradle createRelease -Pru.fix.gradle.release.releaseMajorMinorVersion=2.0
 ```
 
 # Well known issues
-
-git commands works from console, but gradle-release-plugin tasks fails with **Auth fail** exception. 
 ```
 JSchException: Auth fail
 ```
+Git commands works from console, but gradle-release-plugin tasks fails with **JSchException: Auth fail**. 
+
 * gradle-release-plugin uses JGit to access git repository.
 It tries to work through ssh-agent.  
 If you are using ssh authentication and received **Auth fail** exception, then this may be due to the fact that your ssh key is not added properly to the ssh-agent.

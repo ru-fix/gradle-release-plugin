@@ -407,11 +407,21 @@ then default `1.0.0` will be used. If tags found then max tag will be incremente
 - `gradle.properties` is being committed with new tag name `1.3.8`
 - `createRelease` task can only make minor increment. User have to manually create tag `2.0.0` in order to make major version update. Or use can specify major and minor version part explicitly through property `-Pru.fix.gradle.release.releaseMajorMinorVersion=2.0`
 ```shell script
-gradle createRlease -Pru.fix.gradle.release.releaseMajorMinorVersion=2.0
+gradle createRelease -Pru.fix.gradle.release.releaseMajorMinorVersion=2.0
 ```
 
 # Well known issues
 
-* If you use ssh authentication and received **Auth fail** exception, then this may be due to the fact that your ssh key is not added to the ssh-agent.
+git commands works from console, but gradle-release-plugin tasks fails with **Auth fail** exception. 
+```
+JSchException: Auth fail
+```
+* gradle-release-plugin uses JGit to access git repository.
+It tries to work through ssh-agent.  
+If you are using ssh authentication and received **Auth fail** exception, then this may be due to the fact that your ssh key is not added properly to the ssh-agent.
 To add a key to a ssh agent in Linux, use the **ssh-add** command.
-
+* Recent versions of OpenSSH (7.8 and newer) generate keys in new OpenSSH format by default. JSch does not support this key format.   
+You can use ssh-keygen to convert the key to the classic OpenSSH format: `ssh-keygen -p -f file -m pem -P passphrase -N passphrase`.   
+https://stackoverflow.com/a/53783283  
+Or you can try to generate new key with `ssh-keygen -t rsa -m PEM` and update this key on your git remote repositoy.   
+https://github.com/ru-fix/gradle-release-plugin/issues/6

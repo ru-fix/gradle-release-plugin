@@ -74,6 +74,7 @@ class BranchGardenerTest {
         every { project.hasProperty(PluginProperties.RELEASE_MAJOR_MINOR_VERSION.name) } returns false
         every { project.hasProperty(PluginProperties.CHECKOUT_TAG.name) } returns false
         every { project.hasProperty(PluginProperties.CREATE_DEFAULT_RELEASE_BRANCH.name) } returns false
+        every { project.hasProperty(PluginProperties.DRY_RUN.name) } returns false
     }
 
     private fun mockLogging() {

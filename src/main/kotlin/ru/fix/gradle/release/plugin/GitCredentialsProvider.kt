@@ -5,6 +5,8 @@ import org.eclipse.jgit.transport.CredentialItem
 import org.eclipse.jgit.transport.CredentialsProvider
 import org.eclipse.jgit.transport.URIish
 import org.gradle.api.Project
+import ru.fix.gradle.release.plugin.PluginProperties.GIT_LOGIN
+import ru.fix.gradle.release.plugin.PluginProperties.GIT_PASSWORD
 
 
 class GitCredentialsProvider(
@@ -20,33 +22,19 @@ class GitCredentialsProvider(
 
     fun resolveLogin(): String {
         project.logger.lifecycle("Looking for gradle/system property ${PluginProperties.GIT_LOGIN}")
-        if (project.hasProperty(PluginProperties.GIT_LOGIN)) {
-            val propertyLogin = project.property(PluginProperties.GIT_LOGIN).toString()
-            if (propertyLogin.isNotEmpty()) {
-                return propertyLogin
-            }
-        }
-        val systemPropertyLogin = System.getProperty(PluginProperties.GIT_LOGIN)
-        if (systemPropertyLogin != null && systemPropertyLogin.isNotEmpty()) {
-            return systemPropertyLogin
+
+        GIT_LOGIN.fromProjectOrSystem(project)?.let {
+            return it
         }
         return userInteractor.promptQuestion("Please, enter your login: ")
     }
 
     fun resolvePassword(): CharArray {
         project.logger.lifecycle("Looking for gradle/system property ${PluginProperties.GIT_PASSWORD}")
-        if (project.hasProperty(PluginProperties.GIT_PASSWORD)) {
-            val propertyPassword = project.property(PluginProperties.GIT_PASSWORD).toString()
-            if (propertyPassword.isNotEmpty()) {
-                return propertyPassword.toCharArray()
-            }
-        }
-        val systemPropertyPassword = System.getProperty(PluginProperties.GIT_PASSWORD)
-        if (systemPropertyPassword != null && systemPropertyPassword.isNotEmpty()) {
-            return systemPropertyPassword.toCharArray()
-        }
 
-
+        GIT_PASSWORD.fromProjectOrSystem(project)?.let{
+            return it.toCharArray()
+        }
         return userInteractor.promptPassword("Please, enter your password: ")
     }
 

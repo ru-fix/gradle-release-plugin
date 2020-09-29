@@ -69,11 +69,11 @@ class BranchGardenerTest {
     }
 
     private fun mockAbsentProperties() {
-        every { project.hasProperty(PluginProperties.GIT_LOGIN) } returns false
-        every { project.hasProperty(PluginProperties.GIT_PASSWORD) } returns false
-        every { project.hasProperty(PluginProperties.RELEASE_MAJOR_MINOR_VERSION) } returns false
-        every { project.hasProperty(PluginProperties.CHECKOUT_TAG) } returns false
-        every { project.hasProperty(PluginProperties.CREATE_DEFAULT_RELEASE_BRANCH) } returns false
+        every { project.hasProperty(PluginProperties.GIT_LOGIN.name) } returns false
+        every { project.hasProperty(PluginProperties.GIT_PASSWORD.name) } returns false
+        every { project.hasProperty(PluginProperties.RELEASE_MAJOR_MINOR_VERSION.name) } returns false
+        every { project.hasProperty(PluginProperties.CHECKOUT_TAG.name) } returns false
+        every { project.hasProperty(PluginProperties.CREATE_DEFAULT_RELEASE_BRANCH.name) } returns false
     }
 
     private fun mockLogging() {
@@ -269,8 +269,8 @@ class BranchGardenerTest {
 
     @Test
     fun `create release branch from current branch without user prompt`() {
-        every { project.hasProperty(PluginProperties.CREATE_DEFAULT_RELEASE_BRANCH) } returns true
-        every { project.property(PluginProperties.CREATE_DEFAULT_RELEASE_BRANCH) } returns "true"
+        every { project.hasProperty(PluginProperties.CREATE_DEFAULT_RELEASE_BRANCH.name) } returns true
+        every { project.property(PluginProperties.CREATE_DEFAULT_RELEASE_BRANCH.name) } returns "true"
 
         every { gitRepo.isUncommittedChangesExist() } returns false
         every { gitRepo.getCurrentBranch() } returns "release/1.2"

@@ -19,10 +19,14 @@ class BranchGardener(
 
         val versionManager = VersionManager(git, userInteractor)
         if (git.isUncommittedChangesExist()) {
+            if (PluginProperties.DRY_RUN.fromProjectOrSystem(project) == true) {
+                userInteractor.info("Found uncommitted changes. Ignoring ")
+            } else {
             userInteractor.error("" +
                     "Could not create new release due to uncommitted changes. " +
                     "Please commit your current work before creating new release.")
             return
+        }
         }
 
         git.fetchTags()
@@ -33,12 +37,9 @@ class BranchGardener(
         // by default current branch is used as release branch
         // but user can specify explicitly which major and minor version to use to create release
         val userDefinedMajorMinorVersion: String? =
-                if (project.hasProperty(PluginProperties.RELEASE_MAJOR_MINOR_VERSION)) {
-                    val majorMinorVersion = project.property(PluginProperties.RELEASE_MAJOR_MINOR_VERSION).toString()
+                PluginProperties.RELEASE_MAJOR_MINOR_VERSION.fromProjectOrSystem(project)?.let { majorMinorVersion ->
                     versionManager.assertValidMajorMinorVersion(majorMinorVersion)
                     majorMinorVersion
-                } else {
-                    null
                 }
 
         val branch: String
@@ -81,8 +82,7 @@ class BranchGardener(
         git.commitFilesInIndex(extension.commitMessage(fullVersion))
         val tagRef = git.createTag(extension.tagName(fullVersion), extension.commitMessage(fullVersion))
 
-        if (project.hasProperty(PluginProperties.CHECKOUT_TAG) &&
-                project.property(PluginProperties.CHECKOUT_TAG).toString().toBoolean()) {
+        if (PluginProperties.CHECKOUT_TAG.fromProjectOrSystem(project) == true) {
             git.checkoutTag(fullVersion)
         } else {
             git.checkoutLocalBranch(branch)
@@ -137,9 +137,7 @@ class BranchGardener(
 
         val supposedVersion = versionManager.supposeBranchVersion()
 
-        val userVersion = if (
-                project.hasProperty(CREATE_DEFAULT_RELEASE_BRANCH) &&
-                project.property(CREATE_DEFAULT_RELEASE_BRANCH).toString().toBoolean()) {
+        val userVersion = if (CREATE_DEFAULT_RELEASE_BRANCH.fromProjectOrSystem(project) == true) {
             supposedVersion
         } else {
             userInteractor.promptQuestion(

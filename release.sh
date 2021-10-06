@@ -1,5 +1,5 @@
 #!/bin/bash
-# Since gradle-release-plugin can not use itself to release itselt we have to use this script
+# Since gradle-release-plugin can not release itself we have to use this script
 git fetch --tags
 git tag --list | sort -V
 echo Enter new tag version

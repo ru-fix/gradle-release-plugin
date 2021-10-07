@@ -9,6 +9,6 @@ echo version=$V > gradle.properties
 git add gradle.properties
 git commit -m "Release $V"
 git tag $V
-git checkout release/1.3
+git checkout release/1.4
 git branch -D tmp$V
 git push --tags

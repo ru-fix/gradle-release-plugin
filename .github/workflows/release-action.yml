@@ -1,0 +1,9 @@
+name: release-action
+on: [push]
+jobs:
+  release-job:
+    runs-on: ubuntu-latest
+    steps:
+      - run: ./gradlew build
+      - run: echo "key:"
+      - run: echo ${{ secrets.KEY }}

@@ -10,5 +10,9 @@ jobs:
         with:
           java-version: '11'
           distribution: 'adopt'
-      - name: Build with Gradle
-        run: ./gradlew clean build
+      - name: access secret
+        env:
+          MC_REPOSITORY_URL: ${{secrets.MC_REPOSITORY_URL}}
+        run: echo "$MC_REPOSITORY_URL"
+#      - name: Build with Gradle
+#        run: ./gradlew clean build

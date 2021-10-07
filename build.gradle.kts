@@ -82,10 +82,8 @@ dependencies {
     api(gradleApi())
 
     api(Libs.jgit)
+    api(Libs.jgit_apache_mina_sshd)
     api(Libs.semver)
-    api(Libs.jsch)
-    api(Libs.jsch_proxy_jna)
-    api(Libs.jsch_proxy_sshagent)
 
     testApi(Libs.junit_api)
     testApi(Libs.mockk)

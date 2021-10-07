@@ -1,9 +1,10 @@
 object Vers {
-    val kotlin = "1.3.61"
+    val kotlin = "1.5.21"
     val dokka = "0.9.18"
     val junit = "5.6.0"
     val sl4j = "1.7.30"
     val log4j = "2.13.1"
+    val jgit = "5.13.0.202109080827-r"
 }
 
 object Libs {
@@ -22,12 +23,15 @@ object Libs {
 
     val mockk = "io.mockk:mockk:1.9.3"
 
-    val jgit = "org.eclipse.jgit:org.eclipse.jgit:5.6.1.202002131546-r"
+    val jgit = "org.eclipse.jgit:org.eclipse.jgit:${Vers.jgit}"
+    val jgit_apache_mina_sshd = "org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${Vers.jgit}"
 
     val semver = "com.github.zafarkhaja:java-semver:0.9.0"
-    val jsch = "com.jcraft:jsch.agentproxy.jsch:0.0.9"
-    val jsch_proxy_jna = "com.jcraft:jsch.agentproxy.usocket-jna:0.0.9"
-    val jsch_proxy_sshagent = "com.jcraft:jsch.agentproxy.sshagent:0.0.9"
+
+
+//    val jsch = "com.jcraft:jsch.agentproxy.jsch:0.0.9"
+//    val jsch_proxy_jna = "com.jcraft:jsch.agentproxy.usocket-jna:0.0.9"
+//    val jsch_proxy_sshagent = "com.jcraft:jsch.agentproxy.sshagent:0.0.9"
 
     val kotlin_logging = "io.github.microutils:kotlin-logging:1.7.8"
     val slf4j_api = "org.slf4j:slf4j-api:${Vers.sl4j}"

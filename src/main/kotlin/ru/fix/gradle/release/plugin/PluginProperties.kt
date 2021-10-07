@@ -3,7 +3,11 @@ package ru.fix.gradle.release.plugin
 import org.gradle.api.Project
 
 object PluginProperties {
-    open class StringProperty(val name: String) {
+    class StringProperty(val name: String) {
+        override fun toString(): String {
+            return name
+        }
+
         fun fromProject(project: Project): String? {
             return if (project.hasProperty(name)) {
                 project.property(name)?.toString()?.takeIf { it.isNotEmpty() }

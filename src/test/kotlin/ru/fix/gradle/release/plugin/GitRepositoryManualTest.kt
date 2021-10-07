@@ -8,6 +8,7 @@ import io.kotlintest.matchers.withClue
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.slot
 import org.gradle.api.Project
 import org.gradle.internal.impldep.com.google.common.io.Files
 import org.junit.jupiter.api.Assertions
@@ -31,9 +32,10 @@ class GitRepositoryManualTest {
 
     @MockK
     lateinit var project: Project
-
     @MockK
-    lateinit var userInteractor: GradleUserInteractor
+    lateinit var gradleProjectLogger: org.gradle.api.logging.Logger
+
+    var userInteractor = JournaledTestUserInteractor()
 
     private val REPOSITORY_PATH = ""
 
@@ -41,6 +43,12 @@ class GitRepositoryManualTest {
     fun beforeEach(){
         every { project.hasProperty(PluginProperties.GIT_LOGIN.name) } returns false
         every { project.hasProperty(PluginProperties.GIT_PASSWORD.name) } returns false
+        every { project.logger } returns gradleProjectLogger
+        val messageSlot = slot< String>()
+        every { gradleProjectLogger.lifecycle(capture(messageSlot)) }  answers {
+            println(messageSlot.captured)
+        }
+
     }
 
     fun withRepository(block: (GitRepository) -> Unit) =
@@ -52,6 +60,11 @@ class GitRepositoryManualTest {
 
     @Test
     fun `git fetch does not throw exception`() = withRepository { git ->
+        git.fetchTags()
+    }
+
+    @Test
+    fun fetch() = withRepository { git ->
         git.fetchTags()
     }
 

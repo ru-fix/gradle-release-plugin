@@ -10,8 +10,9 @@ import ru.fix.gradle.release.plugin.PluginProperties.GIT_PASSWORD
 
 
 class GitCredentialsProvider(
-        private val project: Project,
-        private val userInteractor: UserInteractor) : CredentialsProvider() {
+    private val project: Project,
+    private val userInteractor: UserInteractor
+) : CredentialsProvider() {
 
     private val login by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { resolveLogin() }
     private val password by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { resolvePassword() }
@@ -32,7 +33,7 @@ class GitCredentialsProvider(
     fun resolvePassword(): CharArray {
         project.logger.lifecycle("Looking for gradle/system property ${PluginProperties.GIT_PASSWORD}")
 
-        GIT_PASSWORD.fromProjectOrSystem(project)?.let{
+        GIT_PASSWORD.fromProjectOrSystem(project)?.let {
             return it.toCharArray()
         }
         return userInteractor.promptPassword("Please, enter your password: ")
@@ -40,15 +41,21 @@ class GitCredentialsProvider(
 
     override fun get(uri: URIish, vararg credentialItems: CredentialItem): Boolean {
         for (credentialItem in credentialItems) {
-            if (credentialItem is CredentialItem.Username) {
-                credentialItem.value = login
-                continue
+            when (credentialItem) {
+                is CredentialItem.Username -> {
+                    credentialItem.value = login
+                }
+                is CredentialItem.Password -> {
+                    credentialItem.value = password
+                }
+                is CredentialItem.InformationalMessage -> {
+                    project.logger.lifecycle("Git: " + credentialItem.promptText)
+                }
+                else -> throw UnsupportedCredentialItem(
+                    uri,
+                    credentialItem.javaClass.name + ":" + credentialItem.promptText
+                )
             }
-            if (credentialItem is CredentialItem.Password) {
-                credentialItem.value = password
-                continue
-            }
-            throw UnsupportedCredentialItem(uri, credentialItem.javaClass.name + ":" + credentialItem.promptText)
         }
         return true
     }

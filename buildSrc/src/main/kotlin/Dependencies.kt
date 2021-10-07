@@ -1,6 +1,6 @@
 object Vers {
     val kotlin = "1.5.21"
-    val dokka = "0.9.18"
+    val dokka = "1.4.30"
     val junit = "5.6.0"
     val sl4j = "1.7.30"
     val log4j = "2.13.1"

@@ -11,7 +11,6 @@ import kotlin.reflect.KProperty
 buildscript {
 
     repositories {
-        jcenter()
         mavenCentral()
     }
 
@@ -28,11 +27,11 @@ buildscript {
  */
 fun envConfig() = object : ReadOnlyProperty<Any?, String?> {
     override fun getValue(thisRef: Any?, property: KProperty<*>): String? =
-            if (ext.has(property.name)) {
-                ext[property.name] as? String
-            } else {
-                System.getenv(property.name)
-            }
+        if (ext.has(property.name)) {
+            ext[property.name] as? String
+        } else {
+            System.getenv(property.name)
+        }
 }
 
 val repositoryUser by envConfig()
@@ -98,10 +97,8 @@ val sourcesJar by tasks.creating(Jar::class) {
     from("src/main/kotlin")
 }
 
-val dokkaTask by tasks.creating(DokkaTask::class) {
-    enabled = false
-    outputFormat = "javadoc"
-    outputDirectory = "$buildDir/dokka"
+val dokkaTask = tasks.getByName<DokkaTask>("dokkaJavadoc") {
+    outputDirectory.set(buildDir.resolve("dokka"))
 }
 
 val dokkaJar by tasks.creating(Jar::class) {
@@ -145,8 +142,10 @@ publishing {
 
             pom {
                 name.set("${project.group}:${project.name}")
-                description.set("Plugin automatically creates branches and tags" +
-                        " and changes version in project gradle.properties file.")
+                description.set(
+                    "Plugin automatically creates branches and tags" +
+                            " and changes version in project gradle.properties file."
+                )
                 url.set("https://github.com/ru-fix/gradle-release-plugin")
                 licenses {
                     license {

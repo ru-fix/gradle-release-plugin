@@ -1,0 +1,27 @@
+name: deploy-action
+on:
+  push:
+    tags:
+      - '*'
+jobs:
+  deploy-job:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: decode key
+          secringEncodingKey: ${{secrets.MC_SECRING_ENC_KEY}}
+        run: gpg --quiet --batch --yes --decrypt --passphrase="$secringEncodingKey" --output $HOME/secrets/secring.gpg secring.gpg.gpgenc
+      - name: deploy
+        env:
+          repositoryUrl: ${{secrets.MC_REPOSITORY_URL}}
+          repositoryUser: ${{secrets.MC_REPOSITORY_USER}}
+          repositoryPassword: ${{secrets.MC_REPOSITORY_PASSWORD}}
+          signingKeyId: ${{secrets.MC_SIGNING_KEY_ID}}
+          signingPassword: ${{secrets.MC_SIGNING_PASSWORD}}
+        run: ./gradlew -PsigningSecretKeyRingFile="$HOME/secrets/secring.gpg" -Dorg.gradle.internal.publish.checksums.insecure=true --info clean build publishToSonatype closeAndReleaseRepository
+

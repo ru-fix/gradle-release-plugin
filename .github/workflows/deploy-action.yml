@@ -14,6 +14,7 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
       - name: decode key
+        env:
           secringEncodingKey: ${{secrets.MC_SECRING_ENC_KEY}}
         run: gpg --quiet --batch --yes --decrypt --passphrase="$secringEncodingKey" --output $HOME/secrets/secring.gpg secring.gpg.gpgenc
       - name: deploy

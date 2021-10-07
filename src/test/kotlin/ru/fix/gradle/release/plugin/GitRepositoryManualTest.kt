@@ -41,6 +41,10 @@ class GitRepositoryManualTest {
 
     @BeforeEach
     fun beforeEach(){
+        userInteractor.populateAnswersFromFile(
+            Paths.get(System.getProperty("user.home"))
+                .resolve(Paths.get("workdir/answers.txt")))
+
         every { project.hasProperty(PluginProperties.GIT_LOGIN.name) } returns false
         every { project.hasProperty(PluginProperties.GIT_PASSWORD.name) } returns false
         every { project.logger } returns gradleProjectLogger
@@ -60,11 +64,6 @@ class GitRepositoryManualTest {
 
     @Test
     fun `git fetch does not throw exception`() = withRepository { git ->
-        git.fetchTags()
-    }
-
-    @Test
-    fun fetch() = withRepository { git ->
         git.fetchTags()
     }
 

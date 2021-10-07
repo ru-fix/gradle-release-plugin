@@ -1,7 +1,10 @@
 package ru.fix.gradle.release.plugin
 
 import mu.KotlinLogging
+import java.nio.file.Path
 import java.util.concurrent.ConcurrentLinkedDeque
+import kotlin.io.path.exists
+import kotlin.io.path.readLines
 
 private val log = KotlinLogging.logger {  }
 
@@ -11,6 +14,18 @@ class JournaledTestUserInteractor : UserInteractor {
 
     fun clear() {
         messages.clear()
+    }
+
+    fun populateAnswersFromFile(file: Path){
+        if(!file.exists()){
+            log.warn { "User answers file not exist: $file" }
+            return
+        } else {
+            log.info { "Read user answers from: $file" }
+            for (line in file.readLines()) {
+                addUserAnswer(line)
+            }
+        }
     }
 
     fun addUserAnswer(answer: String) {

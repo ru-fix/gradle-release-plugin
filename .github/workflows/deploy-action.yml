@@ -27,7 +27,7 @@ jobs:
           repositoryPassword: ${{secrets.MC_REPOSITORY_PASSWORD}}
           signingKeyId: ${{secrets.MC_SIGNING_KEY_ID}}
           signingPassword: ${{secrets.MC_SIGNING_PASSWORD}}
-        run: ./gradlew -PsigningSecretKeyRingFile="secring.gpg" -Dorg.gradle.internal.publish.checksums.insecure=true --info clean build publishToSonatype closeAndReleaseRepository
+        run: ./gradlew -PsigningSecretKeyRingFile="`pwd`/secring.gpg" -Dorg.gradle.internal.publish.checksums.insecure=true --info clean build publishToSonatype closeAndReleaseRepository
       - name: Cleanup Gradle Cache
         run: |
           rm -f ~/.gradle/caches/modules-2/modules-2.lock
